@@ -529,7 +529,7 @@ namespace Windows.UI.Xaml.Controls
                 // we need to set this variable so that if we move from no
                 // template to a template, the "manually generated" template
                 // will be detached as expected.
-                this._renderedControlTemplate = this._itemsPresenter;
+                this.TemplateChild = this._itemsPresenter;
             }
         }
 

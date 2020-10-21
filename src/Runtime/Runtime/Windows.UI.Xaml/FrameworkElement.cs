@@ -54,6 +54,41 @@ namespace Windows.UI.Xaml
     /// </summary>
     public abstract partial class FrameworkElement : UIElement
     {
+        private FrameworkElement _templateChild; // Non-null if this FE has a child that was created as part of a template.
+
+        // Note: TemplateChild is an UIElement in WPF.
+        internal virtual FrameworkElement TemplateChild
+        {
+            get
+            {
+                return this._templateChild;
+            }
+            set
+            {
+                if (this._templateChild != value)
+                {
+                    INTERNAL_VisualTreeManager.DetachVisualChildIfNotNull(this._templateChild, this);
+                    this._templateChild = value;
+#if REWORKLOADED
+                    this.AddVisualChild(_templateChild, 0);
+#else
+                    INTERNAL_VisualTreeManager.AttachVisualChildIfNotAlreadyAttached(this._templateChild, this, 0);
+#endif
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets the element that should be used as the StateGroupRoot for VisualStateMangager.GoToState calls
+        /// </summary>
+        internal virtual FrameworkElement StateGroupsRoot
+        {
+            get
+            {
+                return _templateChild;
+            }
+        }
+
         //--------------------------------------
         // Note: this is a "partial" class. For anything related to Size and Alignment, please refer to the other file ("FrameworkElement_HandlingSizeAndAlignment.cs").
         //--------------------------------------
@@ -115,7 +150,7 @@ namespace Windows.UI.Xaml
         }
 #endif
 
-        #region Resources
+#region Resources
 
         /// <summary>
         ///     Check if resource is not empty.
@@ -190,7 +225,7 @@ namespace Windows.UI.Xaml
             }
         }
         
-        #endregion
+#endregion
 
         /// <summary>
         /// Gets the parent object of this FrameworkElement in the object tree.
@@ -299,7 +334,7 @@ namespace Windows.UI.Xaml
             return BindingOperations.GetBindingExpression(this, dp);
         }
 
-        #region Cursor
+#region Cursor
 
         // Returns:
         //     The cursor to display. The default value is defined as null per this dependency
@@ -339,9 +374,9 @@ namespace Windows.UI.Xaml
             }
         }
 
-        #endregion
+#endregion
 
-        #region IsEnabled
+#region IsEnabled
 
         /// <summary>
         /// Gets or sets a value indicating whether the user can interact with the control.
@@ -437,9 +472,9 @@ namespace Windows.UI.Xaml
             }
         }
 
-        #endregion
+#endregion
 
-        #region Names handling
+#region Names handling
 
         /// <summary>
         /// Retrieves an object that has the specified identifier name.
@@ -493,9 +528,9 @@ namespace Windows.UI.Xaml
             INTERNAL_HtmlDomManager.SetDomElementAttribute(@this.INTERNAL_OuterDomElement, "dataId", (value ?? string.Empty).ToString());
         }
 
-        #endregion
+#endregion
 
-        #region DataContext
+#region DataContext
 
         /// <summary>
         /// Gets or sets the data context for a FrameworkElement when it participates
@@ -533,11 +568,11 @@ namespace Windows.UI.Xaml
         /// <summary>Occurs when the data context for this element changes. </summary>
         public event DependencyPropertyChangedEventHandler DataContextChanged;
 
-        #endregion
+#endregion
 
-        #region Work in progress
+#region Work in progress
 #if WORKINPROGRESS
-        #region Triggers
+#region Triggers
 
         public TriggerCollection Triggers
         {
@@ -553,7 +588,7 @@ namespace Windows.UI.Xaml
                                         typeof(FrameworkElement),
                                         new PropertyMetadata(new TriggerCollection()));
 
-        #endregion
+#endregion
 
         public event EventHandler LayoutUpdated;
 
@@ -632,9 +667,9 @@ namespace Windows.UI.Xaml
             return new Size();
         }
 #endif
-        #endregion Work in progress
+#endregion Work in progress
 
-        #region Tag
+#region Tag
 
         /// <summary>
         /// Gets or sets an arbitrary object value that can be used to store custom information
@@ -655,9 +690,9 @@ namespace Windows.UI.Xaml
                                         typeof(FrameworkElement), 
                                         new PropertyMetadata((object)null));
 
-        #endregion
+#endregion
 
-        #region Handling Styles
+#region Handling Styles
 
         [Obsolete("Use DefaultStyleKey")]
         protected void INTERNAL_SetDefaultStyle(Style defaultStyle)
@@ -874,7 +909,7 @@ namespace Windows.UI.Xaml
             return DependencyProperty.UnsetValue;
         }
 
-        #region DefaultStyleKey
+#region DefaultStyleKey
 
         // Indicates if the ThemeStyle is being re-evaluated
         internal bool IsThemeStyleUpdateInProgress
@@ -1087,11 +1122,11 @@ namespace Windows.UI.Xaml
             get { return _themeStyleCache; }
         }
 
-        #endregion DefaultStyleKey
+#endregion DefaultStyleKey
 
-        #endregion Handling Styles
+#endregion Handling Styles
 
-        #region Loaded/Unloaded events
+#region Loaded/Unloaded events
 
         /// <summary>
         /// Occurs when a FrameworkElement has been constructed and added to the object tree.
@@ -1115,9 +1150,9 @@ namespace Windows.UI.Xaml
                 Unloaded(this, new RoutedEventArgs());
         }
 
-        #endregion
+#endregion
 
-        #region BindingValidationError event
+#region BindingValidationError event
 
         internal bool INTERNAL_AreThereAnyBindingValidationErrorHandlers = false;
 
@@ -1169,7 +1204,7 @@ namespace Windows.UI.Xaml
                 }
             }
         }
-        #endregion
+#endregion
 
 #if REWORKLOADED
         internal override void INTERNAL_FinalizeAttachToParent()
