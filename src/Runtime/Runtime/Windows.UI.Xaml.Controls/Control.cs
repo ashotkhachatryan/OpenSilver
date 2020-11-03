@@ -31,6 +31,7 @@ using Windows.UI.Text;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Input;
+using Windows.Foundation;
 #endif
 
 #if MIGRATION
@@ -45,6 +46,26 @@ namespace Windows.UI.Xaml.Controls
     /// </summary>
     public partial class Control : FrameworkElement
     {
+        // Note: the returned Size is unused for now.
+        internal override sealed Size MeasureCore()
+        {
+            if (this.HasTemplate)
+            {
+                this.ClearRegisteredNames(); // todo: remove this once namescope is fixed.
+            }
+            if (!this.ApplyTemplate())
+            {
+                if (this.TemplateChild != null)
+                {
+#if REWORKLOADED
+                    this.AddVisualChild(this.TemplateChild, 0);
+#else
+                    INTERNAL_VisualTreeManager.AttachVisualChildIfNotAlreadyAttached(this.TemplateChild, this, 0);
+#endif
+                }
+            }
+            return new Size(0, 0);
+        }
 
         //COMMENT 26.03.2020:
         // ERROR DESCRIPTION:
@@ -813,11 +834,19 @@ namespace Windows.UI.Xaml.Controls
             control.TemplateChild = null;
             control.ClearRegisteredNames();
 
-            control.ApplyTemplate();
+            if (control.INTERNAL_VisualParent != null)
+            {
+                INTERNAL_VisualTreeManager.LayoutManager.MeasureQueue.Add(control);
+            }
         }
 
         public bool ApplyTemplate()
         {
+            if (this.INTERNAL_VisualParent == null)
+            {
+                return false;
+            }
+
             bool visualsCreated = false;
             FrameworkElement visualChild = null;
 
@@ -835,21 +864,14 @@ namespace Windows.UI.Xaml.Controls
                         visualsCreated = true;
                     }
                 }
-                else
-                {
-                    visualChild = this.TemplateChild;
-                }
             }
 
             if (visualsCreated)
             {
-                // Raise the OnApplyTemplate method
                 this.TemplateChild = visualChild;
 
-                if (visualChild.Parent == this)
-                {
-                    this.OnApplyTemplate();
-                }
+                // Call the OnApplyTemplate method
+                this.OnApplyTemplate();
             }
 
             return visualsCreated;
@@ -859,18 +881,7 @@ namespace Windows.UI.Xaml.Controls
         {
             base.INTERNAL_OnAttachedToVisualTree();
 
-            // Ensure that the template generated child (if any) is attached to this control.
-            if (this.TemplateChild != null &&
-                this.TemplateChild.Parent == null)
-            {
-#if REWORKLOADED
-                this.AddVisualChild(this.TemplateChild);
-#else
-                INTERNAL_VisualTreeManager.AttachVisualChildIfNotAlreadyAttached(this.TemplateChild, this, 0);
-#endif
-
-                this.OnApplyTemplate();
-            }
+            INTERNAL_VisualTreeManager.LayoutManager.MeasureQueue.Add(this);
         }
 
         /// <summary>

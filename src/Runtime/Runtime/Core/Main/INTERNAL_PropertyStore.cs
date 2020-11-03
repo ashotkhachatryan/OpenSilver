@@ -1,6 +1,11 @@
 ﻿//#define USEASSERT
+using OpenSilver.Internal;
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Text;
+
 #if MIGRATION
 using System.Windows;
 using System.Windows.Controls;
@@ -305,7 +310,7 @@ namespace CSHTML5.Internal
             }
         }
 
-        private static void UpdateEffectiveValue(INTERNAL_PropertyStorage storage,
+        private static bool UpdateEffectiveValue(INTERNAL_PropertyStorage storage,
                                                  object newValue,
                                                  BaseValueSourceInternal newValueSource,
                                                  bool coerceWithCurrentValue,
@@ -344,7 +349,7 @@ namespace CSHTML5.Internal
                 {
                     // value source remains the same.
                     // Exit if the newly set value is of lower precedence than the effective value.
-                    return;
+                    return false;
                 }
 
                 // Get old value before it gets overriden
@@ -470,8 +475,11 @@ namespace CSHTML5.Internal
                 storage.Owner.ProvideSelfAsInheritanceContext(computedValue, null/*storage.Property*/);
             }
 
+            bool valueChanged = false;
             if (!ArePropertiesEqual(oldValue, computedValue, storage.Property.PropertyType))
             {
+                valueChanged = true;
+
                 // Raise the PropertyChanged event
                 if (!storage.TypeMetadata.Inherits || ShouldRaisePropertyChanged(storage))
                 {
@@ -481,7 +489,15 @@ namespace CSHTML5.Internal
                 // Propagate to children if property is inherited
                 if (storage.TypeMetadata.Inherits && propagateChanges)
                 {
-                    CascadeInheritedPropertyToChildren(storage, computedValue);
+                    FrameworkElement rootElement = storage.Owner as FrameworkElement;
+                    if (rootElement != null)
+                    {
+                        InheritablePropertyChangeInfo info = new InheritablePropertyChangeInfo(rootElement,
+                            storage.Property,
+                            oldValue, oldBaseValueSource,
+                            computedValue, newValueSource);
+                        InvalidateOnInheritablePropertyChange(rootElement, info);
+                    }
                 }
             }
 
@@ -490,6 +506,8 @@ namespace CSHTML5.Internal
             {
                 currentExpr.TryUpdateSourceObject(computedValue);
             }
+
+            return valueChanged;
         }
 
         private static void ProcessCoerceValue(INTERNAL_PropertyStorage storage,
@@ -607,21 +625,133 @@ namespace CSHTML5.Internal
             }
         }
 
-        private static void CascadeInheritedPropertyToChildren(INTERNAL_PropertyStorage storage, object newValue)
-        {
-            DependencyObject dependencyObject = storage.Owner;
+        private static VisitedCallback<InheritablePropertyChangeInfo> InheritablePropertyChangeDelegate
+            = new VisitedCallback<InheritablePropertyChangeInfo>(OnInheritablePropertyChanged);
 
-            // Set Inherited Value on the children:
-            if (dependencyObject is UIElement parentUIE)
+        private static bool OnInheritablePropertyChanged(
+            DependencyObject d, 
+            InheritablePropertyChangeInfo info, 
+            bool visitedViaVisualTree)
+        {
+            Debug.Assert(d != null, "Must have non-null current node");
+
+            DependencyProperty dp = info.Property;
+            bool inheritanceNode = IsInheritanceNode(d, dp);
+
+            if (inheritanceNode)
             {
-                if (parentUIE.INTERNAL_VisualChildrenInformation != null)
+                BaseValueSourceInternal oldValueSource = BaseValueSourceInternal.Default;
+                INTERNAL_PropertyStorage storage;
+                if (TryGetInheritedPropertyStorage(d, dp, false, out storage))
                 {
-                    foreach (UIElement child in parentUIE.INTERNAL_VisualChildrenInformation.Keys) //all the children should be in there
+                    oldValueSource = storage.BaseValueSourceInternal;
+                }
+
+                // If the oldValueSource is of lower precedence than Inheritance
+                // only then do we need to Invalidate the property
+                if (BaseValueSourceInternal.Inherited >= oldValueSource)
+                {
+                    if (visitedViaVisualTree && typeof(FrameworkElement).IsInstanceOfType(d))
                     {
-                        child.SetInheritedValue(storage.Property, newValue, true);
+                        DependencyObject logicalParent = ((FrameworkElement)d).Parent;
+                        if (logicalParent != null)
+                        {
+                            DependencyObject visualParent = VisualTreeHelper.GetParent(d);
+                            if (visualParent != null && visualParent != logicalParent)
+                            {
+                                return false;
+                            }
+                        }
+                    }
+
+                    return d.SetInheritedValue(dp, info.NewValue, false);
+                }
+                else
+                {
+                    if (storage == null)
+                    {
+                        // get the storage if we didn't to it ealier.
+                        TryGetInheritedPropertyStorage(d, dp, true, out storage);
+                    }
+
+                    // set the inherited value so that it is known if at some point,
+                    // the value of higher precedence that is currently used is removed.
+                    // we know that the value of the property is not changing, so we can
+                    // skip the call to UpdateEffectiveValue(...)
+                    storage.InheritedValue = info.NewValue;
+                    return false;
+                }
+            }
+            
+            return false;
+        }
+
+        private static bool IsInheritanceNode(
+            DependencyObject d,
+            DependencyProperty dp)
+        {
+            PropertyMetadata metadata = dp.GetMetadata(d.GetType());
+            if (metadata != null)
+            {
+                if (metadata.Inherits)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+
+        private static void InvalidateOnInheritablePropertyChange(FrameworkElement fe, InheritablePropertyChangeInfo info)
+        {
+            if (fe.HasLogicalChildren || (fe.INTERNAL_VisualChildrenInformation != null &&
+                                          fe.INTERNAL_VisualChildrenInformation.Count > 0))
+            {
+                DescendentsWalker<InheritablePropertyChangeInfo> walker = new DescendentsWalker<InheritablePropertyChangeInfo>(
+                    TreeWalkPriority.LogicalTree, InheritablePropertyChangeDelegate, info);
+
+                walker.StartWalk(fe, true);
+            }
+
+#if false
+            if (rootFE != null)
+            {
+                if (rootFE.HasLogicalChildren)
+                {
+                    rootFE.IsLogicalChildrenIterationInProgress = true;
+                    try
+                    {
+                        IEnumerator logicalChildren = rootFE.LogicalChildren;
+                        if (logicalChildren != null)
+                        {
+                            while (logicalChildren.MoveNext())
+                            {
+                                DependencyObject child = logicalChildren.Current as DependencyObject;
+                                if (child != null)
+                                {
+                                    child.SetInheritedValue(info.Property, info.NewValue, true);
+                                }
+                            }
+                        }
+                    }
+                    finally
+                    {
+                        rootFE.IsLogicalChildrenIterationInProgress = false;
                     }
                 }
             }
+
+            if (rootUIE != null)
+            {
+                if (rootUIE.INTERNAL_VisualChildrenInformation != null)
+                {
+                    foreach (UIElement child in rootUIE.INTERNAL_VisualChildrenInformation.Keys)
+                    {
+                        child.SetInheritedValue(info.Property, info.NewValue, true);
+                    }
+                }
+            }
+#endif // false
         }
 
         private static bool ArePropertiesEqual(object obj1, object obj2, Type type)
@@ -649,17 +779,17 @@ namespace CSHTML5.Internal
 
 #endregion
 
-        internal static void SetInheritedValue(INTERNAL_PropertyStorage storage, object newValue, bool recursively)
+        internal static bool SetInheritedValue(INTERNAL_PropertyStorage storage, object newValue, bool recursively)
         {
             storage.InheritedValue = newValue;
 
-            UpdateEffectiveValue(storage,
-                                 newValue,
-                                 BaseValueSourceInternal.Inherited,
-                                 false, // coerceWithCurrentValue
-                                 false, // coerceValue
-                                 newValue == DependencyProperty.UnsetValue, // clearValue
-                                 recursively); // propagateChanges
+            return UpdateEffectiveValue(storage,
+                                        newValue,
+                                        BaseValueSourceInternal.Inherited,
+                                        false, // coerceWithCurrentValue
+                                        false, // coerceValue
+                                        newValue == DependencyProperty.UnsetValue, // clearValue
+                                        recursively); // propagateChanges
         }
 
         internal static void SetLocalStyleValue(INTERNAL_PropertyStorage storage, object newValue)

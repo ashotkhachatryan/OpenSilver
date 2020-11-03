@@ -1,5 +1,7 @@
 ﻿using CSHTML5.Internal;
+using OpenSilver.Internal.Controls;
 using System;
+using System.Collections;
 using System.Diagnostics;
 
 #if MIGRATION
@@ -113,7 +115,7 @@ namespace Windows.UI.Xaml.Controls
     public class TileViewPanel : Panel
     {
         private TileView _owner;
-        private Grid _contentGrid;
+        private GridNotLogical _contentGrid;
 
         protected internal override void INTERNAL_OnAttachedToVisualTree()
         {
@@ -123,13 +125,12 @@ namespace Windows.UI.Xaml.Controls
 
             if (this._contentGrid == null)
             {
-                var grid = new Grid();
+                var grid = new GridNotLogical();
                 var column1 = new ColumnDefinition() { Width = new GridLength(1, GridUnitType.Star) };
                 var column2 = new ColumnDefinition();
                 grid.ColumnDefinitions.Add(column1);
                 grid.ColumnDefinitions.Add(column2);
                 this._contentGrid = grid;
-
             }
 
             BindingOperations.SetBinding(
@@ -183,26 +184,20 @@ namespace Windows.UI.Xaml.Controls
             }
         }
 
-        internal override void OnChildrenMoved(UIElement oldChild, int newIndex, int oldIndex)
-        {
-            if (this._contentGrid != null)
-            {
-                Debug.Assert(this._contentGrid.Children[oldIndex] == oldChild);
-                this._contentGrid.Children.Move(oldIndex, newIndex);
-                this.ArrangeInternal();
-            }
-        }
-
         internal override void OnChildrenReset()
         {
             if (this._contentGrid != null)
             {
                 this._contentGrid.Children.Clear();
-                foreach (var child in this.Children)
+
+                if (this.HasChildren)
                 {
-                    this._contentGrid.Children.Add(child);
+                    foreach (var child in this.Children)
+                    {
+                        this._contentGrid.Children.Add(child);
+                    }
+                    this.ArrangeInternal();
                 }
-                this.ArrangeInternal();
             }
         }
 

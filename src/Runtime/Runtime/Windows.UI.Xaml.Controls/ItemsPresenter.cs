@@ -19,6 +19,12 @@ using System.Collections.Specialized;
 using System.Linq;
 
 #if MIGRATION
+using System.Windows.Media;
+#else
+using Windows.UI.Xaml.Media;
+#endif
+
+#if MIGRATION
 namespace System.Windows.Controls
 #else
 namespace Windows.UI.Xaml.Controls
@@ -91,7 +97,7 @@ namespace Windows.UI.Xaml.Controls
                 if (panel != null)
                 {
                     // Make sure that the panel contains no children
-                    if (panel.Children.Count > 0)
+                    if (panel.InternalChildren != null && panel.InternalChildren.Count > 0)
                     {
                         throw new InvalidOperationException("VisualTree of ItemsPanelTemplate must be a single element.");
                     }
@@ -142,7 +148,7 @@ namespace Windows.UI.Xaml.Controls
             if (panel == null)
                 return null;
 
-            return panel.Parent as ItemsPresenter;
+            return VisualTreeHelper.GetParent(panel) as ItemsPresenter;
         }
 
         protected internal override void INTERNAL_OnAttachedToVisualTree()

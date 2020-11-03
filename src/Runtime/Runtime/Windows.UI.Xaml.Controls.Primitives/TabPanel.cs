@@ -14,13 +14,8 @@
 
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-#if !MIGRATION
-using Windows.UI.Xaml.Controls;
-#endif
+using System.Collections;
+using OpenSilver.Internal.Controls;
 
 #if MIGRATION
 namespace System.Windows.Controls.Primitives
@@ -37,6 +32,22 @@ namespace Windows.UI.Xaml.Controls.Primitives
         public TabPanel()
         {
             this.Orientation = Orientation.Horizontal;
+        }
+
+        protected sealed override UIElementCollection CreateUIElementCollection(FrameworkElement logicalParent)
+        {
+            return base.CreateUIElementCollection(null);
+        }
+
+        /*protected*/ internal override IEnumerator LogicalChildren
+        {
+            get
+            {
+                // Note: Since children are displayed in a grid in our implementation,
+                // this panel's children are not logical children. There are the logical
+                // children of the grid they are displayed in.
+                return EmptyEnumerator.Instance;
+            }
         }
     }
 }
