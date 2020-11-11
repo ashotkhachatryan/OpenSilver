@@ -31,5 +31,6 @@
         <ResourceDictionary Source="../DefaultStyles/INTERNAL_DefaultHeaderedContentControlStyle.xaml" />
         <ResourceDictionary Source="../DefaultStyles/INTERNAL_DefaultBusyIndicatorStyle.xaml" />
         <ResourceDictionary Source="../DefaultStyles/INTERNAL_DefaultValidationSummaryStyle.xaml" />
+        <ResourceDictionary Source="../DefaultStyles/INTERNAL_DefaultDataGridStyle.xaml" />
     </ResourceDictionary.MergedDictionaries>
 </ResourceDictionary>

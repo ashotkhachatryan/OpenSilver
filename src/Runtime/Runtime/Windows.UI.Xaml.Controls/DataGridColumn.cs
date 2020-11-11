@@ -31,19 +31,16 @@ namespace Windows.UI.Xaml.Controls
     /// </summary>
     public abstract partial class DataGridColumn : DependencyObject
     {
+        private DataGridColumnHeader _header;
+        internal ColumnDefinition _gridColumn;
+        internal DataGrid _parent;
+
         protected DataGridColumn()
         {
             CanBeInheritanceContext = false;
             IsInheritanceContextSealed = true;
         }
 
-        internal ColumnDefinition _gridColumn;
-        private DataGridColumnHeader _header;
-        internal DataGrid _parent;
-
-        // Returns:
-        //     The column header content. The registered default is null. For information
-        //     about what can influence the value, see System.Windows.DependencyProperty.
         /// <summary>
         /// Gets or sets the content of the column header.
         /// </summary>
@@ -52,25 +49,37 @@ namespace Windows.UI.Xaml.Controls
             get { return (object)GetValue(HeaderProperty); }
             set { SetValue(HeaderProperty, value); }
         }
+
         public static readonly DependencyProperty HeaderProperty =
-            DependencyProperty.Register("Header", typeof(object), typeof(DataGridColumn), new PropertyMetadata(null, Header_Changed)
-            { CallPropertyChangedWhenLoadedIntoVisualTree = WhenToCallPropertyChangedEnum.IfPropertyIsSet });
+            DependencyProperty.Register(
+                "Header", 
+                typeof(object), 
+                typeof(DataGridColumn), 
+                new PropertyMetadata(null, OnHeaderChanged));
 
-
-        static void Header_Changed(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private static void OnHeaderChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            //todo: tell the DataGrid that we need to refresh the Header's template (same in HeaderTemplate_Changed)
+            DataGridColumn column = (DataGridColumn)d;
+            if (column._header != null)
+            {
+                column._header.Content = e.NewValue;
+            }
         }
 
         /// <summary>
-        /// This method allows to set the header's style without changing the DataGridColumn's HeaderStyle Property. This way, we will still be able to set a new header via DataGrid's ColumnHeaderStyle property.
+        /// This method allows to set the header's style without changing the DataGridColumn's 
+        /// HeaderStyle Property. This way, we will still be able to set a new header via 
+        /// DataGrid's ColumnHeaderStyle property.
         /// </summary>
-        /// <param name="style">The new style to apply to the header</param>
+        /// <param name="style">
+        /// The new style to apply to the header
+        /// </param>
         internal void SetHeaderStyleIfColumnsStyleNotSet(Style style)
         {
-            if (Header == null)
+            if (this._header != null &&
+                this.HeaderStyle == null)
             {
-                _header.Style = style;
+                this._header.Style = style;
             }
         }
 
@@ -82,31 +91,26 @@ namespace Windows.UI.Xaml.Controls
             get { return (Style)GetValue(HeaderStyleProperty); }
             set { SetValue(HeaderStyleProperty, value); }
         }
+
         /// <summary>
-        /// Identifies the System.Windows.Controls.DataGridColumn.HeaderStyle dependency
+        /// Identifies the <see cref="DataGridColumn.HeaderStyle"/> dependency
         /// property.</summary>
         public static readonly DependencyProperty HeaderStyleProperty =
-            DependencyProperty.Register("HeaderStyle", typeof(Style), typeof(DataGridColumn), new PropertyMetadata(null, HeaderStyle_Changed)
-            { CallPropertyChangedWhenLoadedIntoVisualTree = WhenToCallPropertyChangedEnum.IfPropertyIsSet });
+            DependencyProperty.Register(
+                "HeaderStyle", 
+                typeof(Style), 
+                typeof(DataGridColumn), 
+                new PropertyMetadata(null, OnHeaderStyleChanged));
 
-        private static void HeaderStyle_Changed(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private static void OnHeaderStyleChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            if (d is DataGridColumn)
+            DataGridColumn column = (DataGridColumn)d;
+            if (column._header != null)
             {
-                DataGridColumn column = (DataGridColumn)d;
-                if (column._header != null)
-                {
-                    ((DataGridColumn)d)._header.Style = (Style)e.NewValue;
-                }
+                column._header.Style = (Style)e.NewValue;
             }
         }
 
-
-
-        // Returns:
-        //     The object that defines the visual representation of the column header. The
-        //     registered default is null. For information about what can influence the
-        //     value, see System.Windows.DependencyProperty.
         /// <summary>
         /// Gets or sets the template that defines the visual representation of the column
         /// header.
@@ -116,19 +120,26 @@ namespace Windows.UI.Xaml.Controls
             get { return (DataTemplate)GetValue(HeaderTemplateProperty); }
             set { SetValue(HeaderTemplateProperty, value); }
         }
+
         /// <summary>
-        /// Identifies the System.Windows.Controls.DataGridColumn.HeaderTemplate dependency
+        /// Identifies the <see cref="DataGridColumn.HeaderTemplate"/> dependency
         /// property.
         /// </summary>
         public static readonly DependencyProperty HeaderTemplateProperty =
-            DependencyProperty.Register("HeaderTemplate", typeof(DataTemplate), typeof(DataGridColumn), new PropertyMetadata(null, HeaderTemplate_Changed)
-            { CallPropertyChangedWhenLoadedIntoVisualTree = WhenToCallPropertyChangedEnum.IfPropertyIsSet });
+            DependencyProperty.Register(
+                "HeaderTemplate", 
+                typeof(DataTemplate), 
+                typeof(DataGridColumn), 
+                new PropertyMetadata(null, OnHeaderTemplateChanged));
 
-        static void HeaderTemplate_Changed(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private static void OnHeaderTemplateChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            //todo: tell the DataGrid that we need to refresh the Header's template (same in Header_Changed)
+            DataGridColumn column = (DataGridColumn)d;
+            if (column._header != null)
+            {
+                column._header.ContentTemplate = (DataTemplate)e.NewValue;
+            }
         }
-
 
         public Style CellStyle
         {
@@ -137,55 +148,62 @@ namespace Windows.UI.Xaml.Controls
         }
 
         /// <summary>
-        /// Identifies the System.Windows.Controls.DataGridColumn.CellStyle dependency
+        /// Identifies the <see cref="DataGridColumn.CellStyle"/> dependency
         /// property.
         /// </summary>
         public static readonly DependencyProperty CellStyleProperty =
-            DependencyProperty.Register("CellStyle", typeof(Style), typeof(DataGridColumn), new PropertyMetadata(null, CellStyle_Changed)
-            { CallPropertyChangedWhenLoadedIntoVisualTree = WhenToCallPropertyChangedEnum.IfPropertyIsSet });
+            DependencyProperty.Register(
+                "CellStyle", 
+                typeof(Style), 
+                typeof(DataGridColumn), 
+                new PropertyMetadata(null, OnCellStyleChanged));
 
-        private static void CellStyle_Changed(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private static void OnCellStyleChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            if (d is DataGridColumn)
+            DataGridColumn column = (DataGridColumn)d;
+            if (column._parent != null)
             {
-                DataGridColumn column = (DataGridColumn)d;
-                //todo: apply the style to all the cells of the column currently in the DataGrid
+                // todo: Notify owner grid that column changed
             }
         }
 
-
-        // Returns:
-        //     true if the column is auto-generated; otherwise, false. The registered default
-        //     is false. For information about what can influence the value, see System.Windows.DependencyProperty.
         /// <summary>
         /// Gets a value that indicates whether the column is auto-generated.
+        /// The default is <c>false</c>.
         /// </summary>
         public bool IsAutoGenerated
         {
             get { return (bool)GetValue(IsAutoGeneratedProperty); }
             internal set { SetValue(IsAutoGeneratedProperty, value); }
         }
+
         /// <summary>
-        /// Identifies the System.Windows.Controls.DataGridColumn.IsAutoGenerated dependency
+        /// Identifies the <see cref="DataGridColumn.IsAutoGenerated"/> dependency
         /// property.
         /// </summary>
         public static readonly DependencyProperty IsAutoGeneratedProperty =
-            DependencyProperty.Register("IsAutoGenerated", typeof(bool), typeof(DataGridColumn), new PropertyMetadata(false));
-
+            DependencyProperty.Register(
+                "IsAutoGenerated", 
+                typeof(bool), 
+                typeof(DataGridColumn), 
+                new PropertyMetadata(false));
 
         public bool IsReadOnly
         {
             get { return (bool)GetValue(IsReadOnlyProperty); }
             set { SetValue(IsReadOnlyProperty, value); }
         }
+
         /// <summary>
-        /// Identifies the System.Windows.Controls.DataGridColumn.IsAutoGenerated dependency
+        /// Identifies the <see cref="DataGridColumn.IsAutoGenerated"/> dependency
         /// property.
         /// </summary>
         public static readonly DependencyProperty IsReadOnlyProperty =
-            DependencyProperty.Register("IsReadOnly", typeof(bool), typeof(DataGridColumn), new PropertyMetadata(false));
-
-
+            DependencyProperty.Register(
+                "IsReadOnly", 
+                typeof(bool), 
+                typeof(DataGridColumn), 
+                new PropertyMetadata(false));
 
         /// <summary>
         /// Gets or sets the column width or automatic sizing mode.
@@ -195,18 +213,22 @@ namespace Windows.UI.Xaml.Controls
             get { return (DataGridLength)GetValue(WidthProperty); }
             set { SetValue(WidthProperty, value); }
         }
+
         /// <summary>
-        /// Identifies the System.Windows.Controls.DataGridColumn.Width dependency property.
+        /// Identifies the <see cref="DataGridColumn.Width"/> dependency property.
         /// </summary>
         public static readonly DependencyProperty WidthProperty =
-            DependencyProperty.Register("Width", typeof(DataGridLength), typeof(DataGridColumn), new PropertyMetadata(DataGridLength.Auto, Width_Changed)
-            { CallPropertyChangedWhenLoadedIntoVisualTree = WhenToCallPropertyChangedEnum.IfPropertyIsSet });
+            DependencyProperty.Register(
+                "Width", 
+                typeof(DataGridLength), 
+                typeof(DataGridColumn), 
+                new PropertyMetadata(DataGridLength.Auto, OnWidthChanged));
 
-        private static void Width_Changed(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private static void OnWidthChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            if(d is DataGridColumn)
+            DataGridColumn column = (DataGridColumn)d;
+            if (column._gridColumn != null)
             {
-                DataGridColumn column = (DataGridColumn)d;
                 UpdateGridColumnWidth(column);
             }
         }
@@ -214,8 +236,7 @@ namespace Windows.UI.Xaml.Controls
         internal static void UpdateGridColumnWidth(DataGridColumn column)
         {
             DataGridLength newValue = column.Width;
-
-            if (column._parent != null && INTERNAL_VisualTreeManager.IsElementInVisualTree(column._parent))
+            if (column._parent != null)
             {
                 GridUnitType newGridUnitType;
                 switch (newValue.UnitType)
@@ -243,20 +264,20 @@ namespace Windows.UI.Xaml.Controls
             }
         }
 
-
-
         public Visibility Visibility
         {
             get { return (Visibility)GetValue(VisibilityProperty); }
             set { SetValue(VisibilityProperty, value); }
         }
 
-        // Using a DependencyProperty as the backing store for Visibility.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty VisibilityProperty =
-            DependencyProperty.Register("Visibility", typeof(Visibility), typeof(DataGridColumn), new PropertyMetadata(Visibility.Visible, Visibility_Changed)
-            { CallPropertyChangedWhenLoadedIntoVisualTree = WhenToCallPropertyChangedEnum.IfPropertyIsSet });
+            DependencyProperty.Register(
+                "Visibility", 
+                typeof(Visibility), 
+                typeof(DataGridColumn), 
+                new PropertyMetadata(Visibility.Visible, OnVisibilityChanged));
 
-        private static void Visibility_Changed(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private static void OnVisibilityChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             DataGridColumn column = (DataGridColumn)d;
             if (column._gridColumn != null)
