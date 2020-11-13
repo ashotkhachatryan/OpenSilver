@@ -435,38 +435,11 @@ namespace Windows.UI.Xaml.Controls
 
         #endregion IGeneratorHost
 
-        #region Public Methods
+#region Public Methods
 
-#if MIGRATION
-        public override void OnApplyTemplate()
-#else
-        protected override void OnApplyTemplate()
-#endif
-        {
-            base.OnApplyTemplate();
+#endregion Public Methods
 
-            // Attempt to find the <ItemsPresenter /> in the ControlTemplate and, 
-            // if it was found, use it as the place where all the items will be added
-            ItemsPresenter itemsPresenter = this.GetTemplateChild("ItemsHost") as ItemsPresenter;
-            if (itemsPresenter == null)
-            {
-                // Note: In Silverlight and WPF, the ItemsPresenter does not need to be
-                // named ItemsHost. However, the method used below does not work properly
-                // in some cases. For instance, if the ItemsPresenter is the content of a
-                // Popup, it will not be found at this point. (ex: ComboBox default style)
-                itemsPresenter = INTERNAL_VisualTreeManager.GetChildOfType<ItemsPresenter>(this);
-            }
-
-            if (itemsPresenter != null)
-            {
-                this._itemsPresenter = itemsPresenter;
-                itemsPresenter.AttachToOwner(this);
-            }
-        }
-
-        #endregion Public Methods
-
-        #region Protected Methods
+#region Protected Methods
 
         protected virtual void ManageCollectionChanged(NotifyCollectionChangedEventArgs e)
         {
@@ -504,44 +477,35 @@ namespace Windows.UI.Xaml.Controls
         protected internal override void INTERNAL_OnAttachedToVisualTree()
         {
             // We update the ItemsPanel only if there is no ControlTemplate.
-            // Otherwise, it will be done in the "OnApplyTemplate" method.
             base.INTERNAL_OnAttachedToVisualTree();
 
-            if (!this.HasTemplate)
+            if (!this.HasTemplate && this.TemplateChild == null)
             {
                 // If we have no template we have to create an ItemPresenter
                 // manually and attach it to this control.
                 // This can happen for instance if a class derive from
                 // ItemsControl and specify a DefaultStyleKey and the associated
                 // default style does not contain a Setter for the Template
-                // property.
+                // property.                
+                // We need to set this ItemsPresenter so that if we move from 
+                // no template to a template, the "manually generated" template
+                // will be detached as expected.
                 // Note: this is a Silverlight specific behavior.
                 // In WPF the content of the ItemsControl would simply not be
                 // displayed in this scenario.
-                this._itemsPresenter = new ItemsPresenter();
-                this._itemsPresenter.AttachToOwner(this);
-
-#if REWORKLOADED
-                this.AddVisualChild(this._itemsPresenter);
-#else
-                INTERNAL_VisualTreeManager.AttachVisualChildIfNotAlreadyAttached(this._itemsPresenter, this);
-#endif
-
-                // we need to set this variable so that if we move from no
-                // template to a template, the "manually generated" template
-                // will be detached as expected.
-                this.TemplateChild = this._itemsPresenter;
+                this.TemplateChild = new ItemsPresenter();
             }
         }
 
-        #endregion Protected Methods
+#endregion Protected Methods
 
-        #region Internal Properties
+#region Internal Properties
 
         /// <summary>
         /// Returns enumerator to logical children
         /// </summary>
-        /*protected*/ internal override IEnumerator LogicalChildren
+        /*protected*/
+        internal override IEnumerator LogicalChildren
         {
             get
             {
@@ -560,6 +524,7 @@ namespace Windows.UI.Xaml.Controls
         internal ItemsPresenter ItemsPresenter
         {
             get { return this._itemsPresenter; }
+            set { this._itemsPresenter = value; }
         }
 
         internal Panel ItemsHost
@@ -579,9 +544,9 @@ namespace Windows.UI.Xaml.Controls
             get { return this._items != null && this._items.Count > 0; }
         }
 
-        #endregion Internal Properties
+#endregion Internal Properties
 
-        #region Internal Methods
+#region Internal Methods
 
         // A version of Object.Equals with paranoia for mismatched types, to avoid problems
         // with classes that implement Object.Equals poorly, as in Dev11 439664, 746174, DDVSO 602650
@@ -706,7 +671,7 @@ namespace Windows.UI.Xaml.Controls
             this.OnItemsChanged(e);
         }
 
-        #endregion Internal Methods
+#endregion Internal Methods
 
         /// <summary>
         /// Undoes the effects of the PrepareContainerForItemOverride method.
@@ -909,7 +874,7 @@ namespace Windows.UI.Xaml.Controls
             return ItemsControl.GetItemsOwner(ui);
         }
 
-        #region Obsolete
+#region Obsolete
 
         /// <summary>
         /// Derived classes can call this methed in their constructor if they 
@@ -1000,6 +965,6 @@ namespace Windows.UI.Xaml.Controls
             return null;
         }
 
-        #endregion Obsolete
+#endregion Obsolete
     }
 }
