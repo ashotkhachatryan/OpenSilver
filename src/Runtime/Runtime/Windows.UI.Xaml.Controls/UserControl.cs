@@ -111,11 +111,7 @@ namespace Windows.UI.Xaml.Controls
 
             uc.AddLogicalChild(newChild);
 
-#if REWORKLOADED
-            uc.AddVisualChild(newChild);
-#else
             INTERNAL_VisualTreeManager.AttachVisualChildIfNotAlreadyAttached(newChild, uc);
-#endif
         }
 
         //protected virtual void InitializeComponent()

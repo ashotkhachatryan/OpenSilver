@@ -144,22 +144,14 @@ namespace Windows.UI.Xaml.Controls
             {
                 for (int i = 0; i < this.Children.Count; ++i)
                 {
-#if REWORKLOADED
-                    this.AddVisualChild(this.Children[i], i);
-#else
                     INTERNAL_VisualTreeManager.AttachVisualChildIfNotAlreadyAttached(this.Children[i], this, i);
-#endif
                 }
             }            
         }
 
         internal virtual void OnChildrenAdded(UIElement newChild, int index)
         {
-#if REWORKLOADED
-            this.AddVisualChild(newChild, index);
-#else
             INTERNAL_VisualTreeManager.AttachVisualChildIfNotAlreadyAttached(newChild, this, index);
-#endif
         }
 
         internal virtual void OnChildrenRemoved(UIElement oldChild, int index)
@@ -176,11 +168,7 @@ namespace Windows.UI.Xaml.Controls
 
             INTERNAL_VisualTreeManager.DetachVisualChildIfNotNull(oldChild, this);
 
-#if REWORKLOADED
-            this.AddVisualChild(newChild, index);
-#else
             INTERNAL_VisualTreeManager.AttachVisualChildIfNotAlreadyAttached(newChild, this, index);
-#endif
         }
 
 #endregion Children Management
@@ -281,11 +269,7 @@ namespace Windows.UI.Xaml.Controls
                     //this can happen if the Panel is detached during the delay.
                     break;
                 }
-#if REWORKLOADED
-                this.AddVisualChild(newChildren[i]);
-#else
                 INTERNAL_VisualTreeManager.AttachVisualChildIfNotAlreadyAttached(newChildren[i], this);
-#endif
                 INTERNAL_OnChildProgressivelyLoaded();
             }
         }

@@ -160,11 +160,7 @@ namespace Windows.UI.Xaml.Controls
             {
                 if (this.TemplateChild != null)
                 {
-#if REWORKLOADED
-                    this.AddVisualChild(this.TemplateChild, 0);
-#else
                     INTERNAL_VisualTreeManager.AttachVisualChildIfNotAlreadyAttached(this.TemplateChild, this, 0);
-#endif
                 }
             }
             return new Size(0, 0);

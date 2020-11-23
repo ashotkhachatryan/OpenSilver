@@ -205,11 +205,7 @@ namespace Windows.UI.Xaml
                 {
                     INTERNAL_VisualTreeManager.DetachVisualChildIfNotNull(this._templateChild, this);
                     this._templateChild = value;
-#if REWORKLOADED
-                    this.AddVisualChild(_templateChild, 0);
-#else
                     INTERNAL_VisualTreeManager.AttachVisualChildIfNotAlreadyAttached(this._templateChild, this, 0);
-#endif
                 }
             }
         }
@@ -1330,23 +1326,6 @@ namespace Windows.UI.Xaml
             }
         }
 #endregion
-
-#if REWORKLOADED
-        internal override void INTERNAL_FinalizeAttachToParent()
-        {
-            this.INTERNAL_SizeChangedWhenAttachedToVisualTree(); // Raise SizeChanged event
-            this.INTERNAL_RaiseLoadedEvent(); // Raise Loaded event
-
-            // Start listening to size changes
-            if (this._sizeChangedEventHandlers != null && this._sizeChangedEventHandlers.Count > 0)
-            {
-                if (this._resizeSensor == null)
-                {
-                    this._resizeSensor = CSHTML5.Interop.ExecuteJavaScript(@"new ResizeSensor($0, $1)", this.INTERNAL_OuterDomElement, (Action)this.HandleSizeChanged);
-                }
-            }
-        }
-#endif
 
         protected internal override void INTERNAL_OnDetachedFromVisualTree()
         {

@@ -309,11 +309,7 @@ namespace Windows.UI.Xaml.Controls
                     //todo-perf: when adding the columns and rows of the Grid, we currently remove and add back all the children many times.
                     foreach (UIElement child in Children)
                     {
-#if REWORKLOADED
-                        this.AddVisualChild(child);
-#else
                         INTERNAL_VisualTreeManager.AttachVisualChildIfNotAlreadyAttached(child, this);
-#endif
                     }
                 }
             }
@@ -774,11 +770,7 @@ namespace Windows.UI.Xaml.Controls
                 if (INTERNAL_VisualTreeManager.IsElementInVisualTree(this))
                 {
                     this.UpdateStructureWhenAddingChild(newChild);
-#if REWORKLOADED
-                    this.AddVisualChild(newChild, index);
-#else
                     INTERNAL_VisualTreeManager.AttachVisualChildIfNotAlreadyAttached(newChild, this, index);
-#endif
                     this.LocallyManageChildrenChanged();
                 }
             }
@@ -820,11 +812,7 @@ namespace Windows.UI.Xaml.Controls
                 INTERNAL_VisualTreeManager.DetachVisualChildIfNotNull(oldChild, this);
 
                 this.UpdateStructureWhenAddingChild(newChild);
-#if REWORKLOADED
-                this.AddVisualChild(newChild, index);
-#else
                 INTERNAL_VisualTreeManager.AttachVisualChildIfNotAlreadyAttached(newChild, this, index);
-#endif
 
                 this.LocallyManageChildrenChanged();
             }
@@ -856,11 +844,7 @@ namespace Windows.UI.Xaml.Controls
                 for (int i = 0; i < this.Children.Count; ++i)
                 {
                     this.UpdateStructureWhenAddingChild(this.Children[i]);
-#if REWORKLOADED
-                    this.AddVisualChild(this.Children[i], i);
-#else
                     INTERNAL_VisualTreeManager.AttachVisualChildIfNotAlreadyAttached(this.Children[i], this, i);
-#endif
                 }
 
                 this.LocallyManageChildrenChanged();

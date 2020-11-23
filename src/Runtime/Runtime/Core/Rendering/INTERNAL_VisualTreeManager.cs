@@ -508,13 +508,6 @@ if(nextSibling != undefined) {
             object domElementWhereToPlaceChildStuff,
             object wrapperForChild)
         {
-#if REWORKLOADED
-            if (INTERNAL_VisualTreeOperation.Current.Root == null)
-            {
-                INTERNAL_VisualTreeOperation.Current.Root = parent;
-            }
-#endif
-
             //--------------------------------------------------------
             // CREATE THE DIV FOR THE MARGINS (OPTIONAL):
             //--------------------------------------------------------
@@ -774,16 +767,11 @@ if(nextSibling != undefined) {
             // it (unless IsTabStop is False) to its current value (default is Int32.MaxValue). At the time when this code was
             // written, there was no way to automatically call the "OnChanged" on a dependency property if no value was set.
 
-#if !REWORKLOADED
             // IMPORTANT: This needs to be done AFTER the "OnApplyTemplate" (for example, the TextBox sets the "INTERNAL_OptionalSpecifyDomElementConcernedByFocus" in the "OnApplyTemplate").
             if (isChildAControl)
             {
-                if (!(child is ContentPresenter) && !(child is TextBlock)) //ContentPresenter should not count in tabbing, as well as TextBlock (especially since TextBlock is not supposed to be a Control).
-                {
-                    Control.TabIndexProperty_MethodToUpdateDom(child, ((Control)child).TabIndex);
-                }
+                Control.TabIndexProperty_MethodToUpdateDom(child, ((Control)child).TabIndex);
             }
-#endif
 
             //--------------------------------------------------------
             // APPLY THE VISIBILITY:
@@ -796,7 +784,6 @@ if(nextSibling != undefined) {
             //--------------------------------------------------------
             // RAISE THE "SIZECHANGED" EVENT:
             //--------------------------------------------------------
-#if !REWORKLOADED
 #if PERFSTAT
             var t10 = Performance.now();
 #endif
@@ -829,10 +816,6 @@ if(nextSibling != undefined) {
 
 #if PERFSTAT
             Performance.Counter("VisualTreeManager: Raise Loaded event", t11);
-#endif
-
-#else
-            INTERNAL_VisualTreeOperation.Current.Enqueue(child);
 #endif
         }
 
@@ -976,44 +959,4 @@ if(nextSibling != undefined) {
             return null;
         }
     }
-
-#if REWORKLOADED
-    internal sealed class INTERNAL_VisualTreeOperation
-    {
-        private readonly Queue<UIElement> visualElements;
-
-        static INTERNAL_VisualTreeOperation()
-        {
-            Current = new INTERNAL_VisualTreeOperation();
-        }
-
-        private INTERNAL_VisualTreeOperation()
-        {
-            this.visualElements = new Queue<UIElement>();
-        }
-
-        public static INTERNAL_VisualTreeOperation Current { get; private set; }
-
-        public UIElement Root { get; set; }
-
-        public void Enqueue(UIElement uiE)
-        {
-            this.visualElements.Enqueue(uiE);
-        }
-
-        public void Complete()
-        {
-            while (this.visualElements.Count > 0)
-            {
-                UIElement uiE = this.visualElements.Dequeue();
-                if (uiE._isLoaded)
-                {
-                    uiE.INTERNAL_FinalizeAttachToParent();
-                    uiE.StartManagingPointerPositionForPointerExitedEventIfNeeded();
-                }
-            }
-            this.Root = null;
-        }
-    }
-#endif
 }

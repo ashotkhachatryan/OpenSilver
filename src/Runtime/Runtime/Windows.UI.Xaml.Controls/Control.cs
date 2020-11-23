@@ -57,11 +57,7 @@ namespace Windows.UI.Xaml.Controls
             {
                 if (this.TemplateChild != null)
                 {
-#if REWORKLOADED
-                    this.AddVisualChild(this.TemplateChild, 0);
-#else
                     INTERNAL_VisualTreeManager.AttachVisualChildIfNotAlreadyAttached(this.TemplateChild, this, 0);
-#endif
                 }
             }
             return new Size(0, 0);
@@ -1212,14 +1208,6 @@ void Control_PointerReleased(object sender, Input.PointerRoutedEventArgs e)
                 return this._templateCache != null;
             }
         }
-
-#if REWORKLOADED
-        internal override void INTERNAL_FinalizeAttachToParent()
-        {
-            this.UpdateTabIndex(this.IsTabStop, this.TabIndex);
-            base.INTERNAL_FinalizeAttachToParent();
-        }
-#endif
 
 #if WORKINPROGRESS
 #if MIGRATION
