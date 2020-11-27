@@ -33,15 +33,15 @@ namespace Windows.UI.Xaml.Controls
     public partial class ContentControl : Control
     {
         #region Constructor
-        
+
         public ContentControl()
         {
-
+            this.DefaultStyleKey = typeof(ContentControl);
         }
 
         #endregion Constructor
 
-        #region Public Properties
+        #region Dependency Properties
 
         /// <summary>
         /// Gets or sets the content of a ContentControl.
@@ -55,12 +55,17 @@ namespace Windows.UI.Xaml.Controls
         /// <summary>
         /// Identifies the Content dependency property.
         /// </summary>
-        public static readonly DependencyProperty ContentProperty = 
+        public static readonly DependencyProperty ContentProperty =
             DependencyProperty.Register(
                 "Content",
                 typeof(object),
                 typeof(ContentControl),
                 new PropertyMetadata(null, OnContentChanged));
+
+        private static void OnContentChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            ((ContentControl)d).OnContentChanged(e.OldValue, e.NewValue);
+        }
 
         /// <summary>
         /// Gets or sets the data template that is used to display the content of the
@@ -75,23 +80,21 @@ namespace Windows.UI.Xaml.Controls
         /// <summary>
         /// Identifies the ContentTemplate dependency property.
         /// </summary>
-        public static readonly DependencyProperty ContentTemplateProperty = 
+        public static readonly DependencyProperty ContentTemplateProperty =
             DependencyProperty.Register(
                 "ContentTemplate",
                 typeof(DataTemplate),
                 typeof(ContentControl),
-                new PropertyMetadata(null, OnContentTemplateChanged));
+                new PropertyMetadata((object)null));
 
-        #endregion Public Properties
+        #endregion Dependency Properties
 
-        #region Public Methods
+        #region Protected Methods
 
         protected virtual void OnContentChanged(object oldContent, object newContent)
         {
             // Remove the old content child
             this.RemoveLogicalChild(oldContent);
-
-            this.OnContentChangedInternal(oldContent, newContent);
 
             if (this.ContentIsNotLogical)
             {
@@ -112,20 +115,18 @@ namespace Windows.UI.Xaml.Controls
             this.AddLogicalChild(newContent);
         }
 
-        protected internal override void INTERNAL_OnAttachedToVisualTree()
+        #endregion Protected Methods
+
+        #region Internal Properties
+
+        /// <summary>
+        ///    Indicates whether Content should be a logical child or not.
+        /// </summary>
+        internal bool ContentIsNotLogical
         {
-            base.INTERNAL_OnAttachedToVisualTree();
-
-            if (this.HasTemplate)
-            {
-                return;
-            }
-            this.ApplyContentTemplate(this.ContentTemplate);
+            get;
+            set;
         }
-
-        #endregion Public Methods
-
-        #region Internal API
 
         /// <summary>
         /// Returns enumerator to logical children
@@ -158,116 +159,37 @@ namespace Windows.UI.Xaml.Controls
             }
         }
 
-        private UIElement Child
-        {
-            get;
-            set;
-        }
+        #endregion Internal Properties
 
-        // Note: This is virtual so it can be overriden by ContentPresenter.
-        // Remove virtual once ContentPresenter has a proper implementation.
-        internal virtual bool ContentIsNotLogical
-        {
-            get;
-            set;
-        }
+        #region Internal Methods
 
-        internal void OnContentChangedInternal(object oldContent, object newContent)
+        /// <summary>
+        /// Prepare to display the item.
+        /// </summary>
+        internal void PrepareContentControl(object item, DataTemplate template)
         {
-            if (!this.IsLoaded) // change will be handle when attached to Visual Tree in INTERNAL_OnAttachedToVisualTree().
+            if (item != this)
             {
-                return;
-            }
-            if (this.HasTemplate)
-            {
-                return;
-            }
-            if (this.ContentTemplate != null)
-            {
-                // note: At this point, we don't need to regenerate the DataTemplate because it is either
-                // handle in OnContentTemplatePropertyChanged() or INTERNAL_OnAttachedToVisualTree().
-                if (this.Child != null) // else it means that the ContentTemplate is empty, and there is nothing to do.
-                {
-                    ((FrameworkElement)this.Child).DataContext = newContent;
-                }
+                // don't treat Content as a logical child
+                this.ContentIsNotLogical = true;
+
+                this.ContentTemplate = template;
+                this.Content = item;
             }
             else
             {
-                this.ChangeChild(newContent);
+                this.ContentIsNotLogical = false;
             }
         }
 
-        private void ApplyContentTemplate(DataTemplate template)
+        internal void ClearContentControl(object item)
         {
-            object newChild;
-            if (template == null)
+            if (this != item)
             {
-                newChild = this.Content;
-            }
-            else
-            {
-                FrameworkElement generatedContent = template.INTERNAL_InstantiateFrameworkTemplate();
-                if (generatedContent != null)
-                {
-                    generatedContent.DataContext = this.Content;
-                }
-                newChild = generatedContent;
-            }
-            this.ChangeChild(newChild);
-        }
-
-        private void ChangeChild(object newChild)
-        {
-            this.DetachChild(); // Detach current child.
-
-            UIElement newChildAsUIElement = newChild as UIElement;
-            if(newChildAsUIElement != null)
-            {
-                INTERNAL_VisualTreeManager.AttachVisualChildIfNotAlreadyAttached(newChildAsUIElement, this);
-                this.Child = newChildAsUIElement;
-            }
-            else
-            {
-                string contentAsString = newChild == null ? string.Empty : newChild.ToString();
-                INTERNAL_HtmlDomManager.SetContentString(this, contentAsString, removeTextWrapping: true);
-                this.Child = this; // In the case where the child is not an UIElement, we consider the child to be this Control because we don't add a child (we directly set the content of this element).
+                this.ClearValue(ContentProperty);
             }
         }
 
-        private void DetachChild()
-        {
-            if (object.ReferenceEquals(this, this.Child)) // if ContentTemplate is null and Content is not an UIElement
-            {
-                INTERNAL_HtmlDomManager.SetContentString(this, string.Empty, removeTextWrapping: true);
-            }
-            else
-            {
-                INTERNAL_VisualTreeManager.DetachVisualChildIfNotNull(this.Child, this);
-            }
-            this.Child = null;
-        }
-
-        private static void OnContentChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        {
-            //we may want to throw the event here instead of in OnContentChanged since we throw the event every time and OnContentChanged can be overriden.
-            ((ContentControl)d).OnContentChanged(e.OldValue, e.NewValue);
-            //else, it should be directly handled by a Binding in the template.
-        }
-
-        private static void OnContentTemplateChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        {
-            ContentControl contentControl = (ContentControl)d;
-            if (!contentControl.IsLoaded) // change will be handle when attached to Visual Tree in INTERNAL_OnAttachedToVisualTree().
-            {
-                return;
-            }
-            if (contentControl.HasTemplate)
-            {
-                return;
-            }
-            contentControl.ApplyContentTemplate((DataTemplate)e.NewValue);
-        }
-
-        #endregion Internal API
+        #endregion Internal Methods
     }
 }
