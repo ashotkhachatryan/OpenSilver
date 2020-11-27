@@ -234,7 +234,7 @@ namespace Windows.UI.Xaml.Controls
             ItemsControl itemsControl = (ItemsControl)d;
             if (itemsControl.ItemsHost != null)
             {
-                itemsControl.Refresh();
+                itemsControl.Refresh(true);
             }
         }
 
@@ -262,28 +262,7 @@ namespace Windows.UI.Xaml.Controls
             ItemsControl itemsControl = (ItemsControl)d;
             if (itemsControl.ItemsHost != null)
             {
-                itemsControl.Refresh();
-            }
-        }
-
-        internal void Refresh()
-        {
-            IGeneratorHost host = (IGeneratorHost)this;
-
-            this.ItemsHost.Children.Clear();
-            this.ItemContainerGenerator.INTERNAL_Clear();
-            foreach (var item in this.Items)
-            {
-                DependencyObject container = host.GetContainerForItem(item, null);
-                if (container != item)
-                {
-                    container.SetValue(FrameworkElement.DataContextProperty, item);
-                }
-                host.PrepareItemContainer(container, item);
-
-                this.ItemContainerGenerator.INTERNAL_RegisterContainer(container, item);
-
-                this.ItemsHost.Children.Add((UIElement)container);
+                itemsControl.Refresh(true);
             }
         }
 
@@ -310,7 +289,7 @@ namespace Windows.UI.Xaml.Controls
             ItemsControl itemsControl = (ItemsControl)d;
             if (itemsControl.ItemsHost != null)
             {
-                itemsControl.Refresh();
+                itemsControl.Refresh(true);
             }
         }
 
@@ -333,50 +312,25 @@ namespace Windows.UI.Xaml.Controls
 
         DependencyObject IGeneratorHost.GetContainerForItem(object item, DependencyObject recycledContainer)
         {
-            // Note: for now we ignore the recycledContainer parameter.
-            // In WPF containers are not recycled so the parameter is
-            // only kept to preserve the Silverlight method's signature.
-
             DependencyObject container;
 
             // use the item directly, if possible
             if (IsItemItsOwnContainerOverride(item))
             {
-                //note: There was once an exception thrown here if (this.Items.IsUsingItemsSource && this.ItemTemplate != null) was true, stating that "ItemsControl.Items must not be a UIElement type when an ItemTemplate is set."
-                //      I checked in a WPF Project and it seems the ItemTemplate is simply ignored for items that are UIElements so I removed that exception.
-                //todo: see if the exception of the note above should be there in certain cases (it was added in Commit 8eff80c0).
+                // Note: There was once an exception thrown here if 
+                // (this.Items.IsUsingItemsSource && this.ItemTemplate != null) 
+                // was true, stating that "ItemsControl.Items must not be a 
+                // UIElement type when an ItemTemplate is set."
+                // I checked in a WPF Project and it seems the ItemTemplate is 
+                // simply ignored for items that are UIElements so I removed that 
+                // exception.
+                // todo: see if the exception of the note above should be there in 
+                // certain cases (it was added in Commit 8eff80c0).
                 container = item as DependencyObject;
             }
             else
             {
-                container = GetContainerForItemOverride();
-            }
-
-            // the container might have a parent from a previous
-            // generation.  If so, clean it up before using it again.
-            //
-            // Note: This assumes the container is about to be added to a new parent,
-            // according to the ItemsControl/Generator/Container pattern.
-            // If someone calls the generator and doesn't add the container to
-            // a visual parent, unexpected things might happen.
-
-            UIElement visual = container as UIElement;
-            if (visual != null)
-            {
-                UIElement parent = VisualTreeHelper.GetParent(visual) as UIElement;
-                if (parent != null)
-                {
-                    Debug.Assert(parent is FrameworkElement, "The Parent of the container should always be a FrameworkElement");
-                    Panel p = parent as Panel;
-                    if (p != null)
-                    {
-                        p.Children.Remove(visual);
-                    }
-                    //else
-                    //{
-                    //    ((FrameworkElement)parent).TemplateChild = null;
-                    //}
-                }
+                container = recycledContainer == null ? GetContainerForItemOverride() : recycledContainer;
             }
 
             return container;
@@ -398,9 +352,7 @@ namespace Windows.UI.Xaml.Controls
             // without having a logical parent (e.g. via ItemsSource) and without
             // having been generated yet. HasItem indicates if anything has been generated.
 
-            DependencyObject parent = VisualTreeHelper.GetParent(container);
-            //DependencyObject parent = LogicalTreeHelper.GetParent(container);
-
+            DependencyObject parent = (container as FrameworkElement)?.Parent;
             if (parent == null)
             {
                 return IsItemItsOwnContainerOverride(container) &&
@@ -539,7 +491,7 @@ namespace Windows.UI.Xaml.Controls
 
         internal bool HasItems
         {
-            get { return this._items != null && this._items.Count > 0; }
+            get { return this._items != null && this._items.CountInternal > 0; }
         }
 
         #endregion Internal Properties
@@ -602,6 +554,81 @@ namespace Windows.UI.Xaml.Controls
             return IsItemItsOwnContainerOverride(item);
         }
 
+        private void OnItemAdded(object item, int position)
+        {
+            IGeneratorHost host = this;
+            DependencyObject container = host.GetContainerForItem(item, null);
+
+            this.ItemContainerGenerator.INTERNAL_RegisterContainer(container, item);
+            if (container != item)
+            {
+                container.SetValue(DataContextProperty, item);
+            }
+
+            this.ItemsHost.Children.Insert(position, (UIElement)container);
+
+            host.PrepareItemContainer(container, item);
+        }
+
+        private void OnItemRemoved(object item, int position)
+        {
+            IGeneratorHost host = this;
+            DependencyObject container = this.ItemsHost.Children[position];
+
+            this.ItemContainerGenerator.INTERNAL_TryUnregisterContainer(container, item);
+            this.ItemsHost.Children.RemoveAt(position);
+
+            host.ClearContainerForItem(container, item);
+        }
+
+        internal void Refresh(bool reuseContainers)
+        {
+            IGeneratorHost host = this;
+            DependencyObject[] oldContainers = new DependencyObject[Math.Max(this.ItemsHost.Children.Count, this.Items.CountInternal)];
+
+            // First we need to get the containers and their associated item,
+            // or they will be lost before being able to clear them.
+            int containersCount = this.ItemsHost.Children.Count;
+            object[] oldItems = new object[containersCount];
+            for (int i = 0; i < containersCount; ++i)
+            {
+                DependencyObject container = this.ItemsHost.InternalChildren[i];
+                oldContainers[i] = container;
+                oldItems[i] = this.ItemContainerGenerator.ItemFromContainer(container);
+            }
+
+            if (!reuseContainers)
+            {
+                this.ItemsHost.InternalChildren.Clear();
+                this.ItemContainerGenerator.INTERNAL_Clear();
+
+                for (int i = 0; i < containersCount; ++i)
+                {
+                    host.ClearContainerForItem(oldContainers[i], oldItems[i]);
+                }
+            }
+
+            int count = this.Items.CountInternal;
+            for (int i = 0; i < count; ++i)
+            {
+                object item = this.Items[i];
+                DependencyObject recycledContainer = reuseContainers ? oldContainers[i] : null;
+                DependencyObject container = host.GetContainerForItem(item, recycledContainer);
+
+                if (!reuseContainers)
+                {
+                    this.ItemContainerGenerator.INTERNAL_RegisterContainer(container, item);
+                    if (container != item)
+                    {
+                        container.SetValue(FrameworkElement.DataContextProperty, item);
+                    }
+                    this.ItemsHost.Children.Add((UIElement)container);
+                }
+
+                host.PrepareItemContainer(container, item);
+            }
+        }
+
         internal void HandleItemsChanged(NotifyCollectionChangedEventArgs e)
         {
             if (this.ItemsHost == null)
@@ -609,52 +636,22 @@ namespace Windows.UI.Xaml.Controls
                 return;
             }
 
-            IGeneratorHost host = (IGeneratorHost)this;
-
             if (e.Action == NotifyCollectionChangedAction.Reset)
             {
-                this.Refresh();
+                this.Refresh(false);
             }
             else if (e.Action == NotifyCollectionChangedAction.Add)
             {
-                object item = e.NewItems[0];
-                DependencyObject container = host.GetContainerForItem(item, null);
-                if (container != item)
-                {
-                    container.SetValue(FrameworkElement.DataContextProperty, item);
-                }
-                host.PrepareItemContainer(container, item);
-
-                this.ItemContainerGenerator.INTERNAL_RegisterContainer(container, item);
-
-                this.ItemsHost.Children.Insert(e.NewStartingIndex, (UIElement)container);
-
+                this.OnItemAdded(e.NewItems[0], e.NewStartingIndex);
             }
             else if (e.Action == NotifyCollectionChangedAction.Remove)
             {
-                this.ItemContainerGenerator.INTERNAL_TryUnregisterContainer(
-                        this.ItemsHost.Children[e.OldStartingIndex],
-                        e.OldItems[0]);
-
-                this.ItemsHost.Children.RemoveAt(e.OldStartingIndex);
+                this.OnItemRemoved(e.OldItems[0], e.OldStartingIndex);
             }
             else if (e.Action == NotifyCollectionChangedAction.Replace)
             {
-                this.ItemContainerGenerator.INTERNAL_TryUnregisterContainer(
-                        this.ItemsHost.Children[e.OldStartingIndex],
-                        e.OldItems[0]);
-
-                object item = e.NewItems[0];
-                DependencyObject container = host.GetContainerForItem(item, null);
-                if (container != item)
-                {
-                    container.SetValue(FrameworkElement.DataContextProperty, item);
-                }
-                host.PrepareItemContainer(container, item);
-
-                this.ItemContainerGenerator.INTERNAL_RegisterContainer(container, item);
-
-                this.ItemsHost.Children[e.OldStartingIndex] = (UIElement)container;
+                this.OnItemAdded(e.NewItems[0], e.NewStartingIndex);
+                this.OnItemRemoved(e.OldItems[0], e.OldStartingIndex + 1);
             }
             else
             {
@@ -678,17 +675,19 @@ namespace Windows.UI.Xaml.Controls
         /// <param name="item">The item.</param>
         protected virtual void ClearContainerForItemOverride(DependencyObject element, object item)
         {
-            ContentControl cc;
-            ContentPresenter cp;
+            // Note: This is the WPF implementation.
+            // Silverlight does not clear containers on the ItemsControl level.
+            //ContentControl cc;
+            //ContentPresenter cp;
 
-            if ((cc = element as ContentControl) != null)
-            {
-                cc.ClearContentControl(item);
-            }
-            else if ((cp = element as ContentPresenter) != null)
-            {
-                cp.ClearContentPresenter(item);
-            }
+            //if ((cc = element as ContentControl) != null)
+            //{
+            //    cc.ClearContentControl(item);
+            //}
+            //else if ((cp = element as ContentPresenter) != null)
+            //{
+            //    cp.ClearContentPresenter(item);
+            //}
         }
 
         /// <summary>
@@ -808,7 +807,7 @@ namespace Windows.UI.Xaml.Controls
                 return null;
 
             // ui appeared in items collection
-            ItemsControl ic = ui.INTERNAL_VisualParent as ItemsControl;
+            ItemsControl ic = (ui as FrameworkElement)?.Parent as ItemsControl;
             if (ic != null)
             {
                 // this is the right ItemsControl as long as the item

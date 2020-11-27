@@ -226,7 +226,7 @@ namespace Windows.UI.Xaml.Controls
             }
 
             // Attach children to panel
-            this.Owner.Refresh();
+            this.Owner.Refresh(false);
         }
 
         protected internal override void INTERNAL_OnAttachedToVisualTree()
