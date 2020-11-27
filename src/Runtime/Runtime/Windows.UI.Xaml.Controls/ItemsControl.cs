@@ -757,7 +757,7 @@ namespace Windows.UI.Xaml.Controls
             }
         }
 
-        private static DataTemplate GetDataTemplateForDisplayMemberPath(string displayMemberPath)
+        internal static DataTemplate GetDataTemplateForDisplayMemberPath(string displayMemberPath)
         {
             DataTemplate template = new DataTemplate();
 

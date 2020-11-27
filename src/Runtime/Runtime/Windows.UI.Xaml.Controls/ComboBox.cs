@@ -68,7 +68,6 @@ namespace Windows.UI.Xaml.Controls
         Popup _popup;
         ToggleButton _dropDownToggle;
         ContentPresenter _contentPresenter;
-        UIElement _selectedContent;
 
         [Obsolete("ComboBox does not support Native ComboBox. Use 'CSHTML5.Native.Html.Controls.NativeComboBox' instead.")]
         public bool UseNativeComboBox
@@ -98,11 +97,6 @@ namespace Windows.UI.Xaml.Controls
             }
         }
 
-        void BasePrepareContainerForItemOverride(DependencyObject element, object item)
-        {
-            base.PrepareContainerForItemOverride(element, item);
-        }
-
         protected override DependencyObject GetContainerForItemOverride()
         {
             return new ComboBoxItem();
@@ -130,7 +124,6 @@ namespace Windows.UI.Xaml.Controls
         void ComboBoxItem_Click(object sender, RoutedEventArgs e)
         {
             var selectedContainer = (SelectorItem)sender;
-            _selectedContent = sender as UIElement;
 
             // Select the item:
             this.SelectedItem = selectedContainer.INTERNAL_CorrespondingItem;
@@ -144,49 +137,53 @@ namespace Windows.UI.Xaml.Controls
         {
             base.ApplySelectedIndex(index);
 
-            if (this.ItemsHost == null)
+            // Put the selected item into the ContentPresenter if the popup is closed
+            if (!this.IsDropDownOpen)
+            {
+                this.UpdateContentPresenter();
+            }
+        }
+
+        private void UpdateContentPresenter()
+        {
+            if (this._contentPresenter == null)
             {
                 return;
             }
 
-            UIElement newSelectedContent;
+            object content;
+            DataTemplate template;
 
-            if (index == -1)
+            object item = this.SelectedItem;
+            if (item == null)
             {
-                if (_contentPresenter != null)
-                {
-                    _contentPresenter.Content = null;
-                }
-
-                newSelectedContent = null;
-            }
-            else if (index < this.ItemsHost.Children.Count)
-            {
-                ComboBoxItem container = this.ItemsHost.Children[index] as ComboBoxItem;
-                newSelectedContent = container;
+                content = string.Empty;
+                template = ItemsControl.GetDataTemplateForDisplayMemberPath(string.Empty);
             }
             else
             {
-                throw new IndexOutOfRangeException();
-            }
-
-            _selectedContent = newSelectedContent;
-
-            // Put the selected item into the ContentPresenter if the popup is closed
-            if (!this.IsDropDownOpen)
-            {
-                if (this._contentPresenter != null)
+                ComboBoxItem cbi = item as ComboBoxItem;
+                if (cbi != null)
                 {
-                    // Get the actual content (if it is a ComboBoxItem, we want its content):
-                    object content = this._selectedContent;
-                    if (content is ComboBoxItem)
+                    content = cbi.Content;
+                    template = cbi.ContentTemplate;
+                }
+                else
+                {
+                    content = item;
+                    if (item is UIElement)
                     {
-                        content = ((ComboBoxItem)content).Content;
+                        template = ContentPresenter.UIElementContentTemplate;
                     }
-                    // Display the content (if it is a UIElement, display as it is, otherwise, use the DisplayMemberPath/ItemTemplate).
-                    base.PrepareContainerForItemOverride(this._contentPresenter, content);
+                    else
+                    {
+                        template = this.ItemTemplate ?? ItemsControl.GetDataTemplateForDisplayMemberPath(this.DisplayMemberPath);
+                    }
                 }
             }
+
+            this._contentPresenter.Content = content;
+            this._contentPresenter.ContentTemplate = template;
         }
 
 #if MIGRATION
@@ -221,19 +218,9 @@ namespace Windows.UI.Xaml.Controls
                 _popup.ClosedDueToOutsideClick += Popup_ClosedDueToOutsideClick;
             }
 
-            ApplySelectedIndex(SelectedIndex);
-
-            // Put the selected item into the ContentPresenter if the popup is closed
-            if (this._contentPresenter != null)
+            if (!IsDropDownOpen)
             {
-                // Get the actual content (if it is a ComboBoxItem, we want its content):
-                object content = this._selectedContent;
-                if (content is ComboBoxItem)
-                {
-                    content = ((ComboBoxItem)content).Content;
-                }
-                // Display the content (if it is a UIElement, display as it is, otherwise, use the DisplayMemberPath/ItemTemplate).
-                base.PrepareContainerForItemOverride(this._contentPresenter, content);
+                UpdateContentPresenter();
             }
         }
 
@@ -373,18 +360,7 @@ namespace Windows.UI.Xaml.Controls
                     if (comboBox._popup != null)
                         comboBox._popup.IsOpen = false;
 
-                    // Put the selected item back into the ContentPresenter if it was removed when the ToggleButton was checked:
-                    if (comboBox._contentPresenter != null && comboBox._contentPresenter.Content == null)
-                    {
-                        // Get the actual content (if it is a ComboBoxItem, we want its content):
-                        object content = comboBox._selectedContent;
-                        if (content is ComboBoxItem)
-                        {
-                            content = ((ComboBoxItem)content).Content;
-                        }
-                        // Display the content (if it is a UIElement, display as it is, otherwise, use the DisplayMemberPath/ItemTemplate).
-                        comboBox.BasePrepareContainerForItemOverride(comboBox._contentPresenter, content);
-                    }
+                    comboBox.UpdateContentPresenter();
 
                     // Ensure that the toggle button is unchecked:
                     if (comboBox._dropDownToggle != null && comboBox._dropDownToggle.IsChecked == true)
