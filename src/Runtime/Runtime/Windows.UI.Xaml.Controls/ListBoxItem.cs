@@ -38,6 +38,11 @@ namespace Windows.UI.Xaml.Controls
     /// </summary>
     public partial class ListBoxItem : SelectorItem
     {
+        public ListBoxItem()
+        {
+            this.DefaultStyleKey = typeof(ListBoxItem);
+        }
+
         protected internal override void HandleIsSelectedChanged(bool oldValue, bool newValue)
         {
             base.HandleIsSelectedChanged(oldValue, newValue);
@@ -63,7 +68,6 @@ namespace Windows.UI.Xaml.Controls
                                 INTERNAL_WorkaroundObservableCollectionBugWithJSIL.Remove(parent.SelectedItems, this.INTERNAL_CorrespondingItem);
                             }
                         }
-
                     }
                 }
             }
