@@ -58,6 +58,7 @@ namespace Windows.UI.Xaml.Controls
         /// </summary>
         public Frame()
         {
+            this.DefaultStyleKey = typeof(Frame);
             this.Loaded += Frame_Loaded;
             this.Unloaded += Frame_Unloaded;
         }

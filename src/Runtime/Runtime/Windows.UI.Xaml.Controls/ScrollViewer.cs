@@ -36,7 +36,10 @@ namespace Windows.UI.Xaml.Controls
         /// <summary>
         /// Initializes a new instance of the ScrollViewer class.
         /// </summary>
-        public ScrollViewer() : base() { }
+        public ScrollViewer()
+        {
+            this.DefaultStyleKey = typeof(ScrollViewer);
+        }
 
 
         /*
