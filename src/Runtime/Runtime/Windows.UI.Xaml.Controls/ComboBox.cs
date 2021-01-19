@@ -341,10 +341,12 @@ namespace Windows.UI.Xaml.Controls
 
                         comboBox._popup.IsOpen = true;
 
-                        // Make sure the Width of the popup is the same as the popup:
-                        double actualWidth = comboBox._popup.ActualWidth;
-                        if (!double.IsNaN(actualWidth) && comboBox._popup.Child is FrameworkElement)
-                            ((FrameworkElement)comboBox._popup.Child).Width = actualWidth;
+                        // Make sure the Width of the popup is at least the same as the popup
+                        FrameworkElement child = comboBox._popup.Child as FrameworkElement;
+                        if (child != null)
+                        {
+                            child.MinWidth = comboBox._popup.ActualWidth;
+                        }
                     }
 
                     // Ensure that the toggle button is checked:
