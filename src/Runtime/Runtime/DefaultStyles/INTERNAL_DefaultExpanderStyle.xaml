@@ -22,7 +22,6 @@
                                 <VisualState x:Name="Unfocused" />
                             </VisualStateGroup>
                             <VisualStateGroup x:Name="ExpansionStates">
-                                <VisualState x:Name="Collapsed" />
                                 <VisualState x:Name="Expanded">
                                     <Storyboard>
                                         <ObjectAnimationUsingKeyFrames Duration="0"
@@ -33,6 +32,7 @@
                                         </ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
                                 </VisualState>
+                                <VisualState x:Name="Collapsed" />
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
                         <StackPanel>
@@ -48,6 +48,8 @@
                                             <VisualStateManager.VisualStateGroups>
                                                 <VisualStateGroup x:Name="CommonStates">
                                                     <VisualState x:Name="Normal" />
+                                                </VisualStateGroup>
+                                                <VisualStateGroup x:Name="CheckStates">
                                                     <VisualState x:Name="Checked">
                                                         <Storyboard>
                                                             <ObjectAnimationUsingKeyFrames Duration="0"
@@ -58,6 +60,7 @@
                                                             </ObjectAnimationUsingKeyFrames>
                                                         </Storyboard>
                                                     </VisualState>
+                                                    <VisualState x:Name="Unchecked" />
                                                 </VisualStateGroup>
                                                 <VisualStateGroup x:Name="FocusStates">
                                                     <VisualState x:Name="Focused" />
