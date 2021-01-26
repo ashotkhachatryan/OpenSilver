@@ -261,7 +261,9 @@
                                           Padding="{TemplateBinding Padding}"
                                           Background="{TemplateBinding Background}"
                                           BorderBrush="Transparent"
-                                          BorderThickness="0">
+                                          BorderThickness="0"
+                                          VerticalScrollBarVisibility="Auto"
+                                          HorizontalScrollBarVisibility="Auto">
                                 <!-- TabNavigation="{TemplateBinding TabNavigation}" -->
                                 <ItemsPresenter />
                             </ScrollViewer>
