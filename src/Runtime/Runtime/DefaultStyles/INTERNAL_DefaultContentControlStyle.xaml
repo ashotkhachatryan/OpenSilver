@@ -22,44 +22,54 @@
             </Setter.Value>
         </Setter>
     </Style>
-  
+
     <!-- ScrollViewer -->
     <Style TargetType="ScrollViewer">
-        <Setter Property="HorizontalContentAlignment" Value="Left" />
-        <Setter Property="VerticalContentAlignment" Value="Top" />
-        <Setter Property="VerticalScrollBarVisibility" Value="Visible" />
-        <Setter Property="Padding" Value="4"/>
-        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="HorizontalContentAlignment"
+                Value="Left" />
+        <Setter Property="VerticalContentAlignment"
+                Value="Top" />
+        <Setter Property="VerticalScrollBarVisibility"
+                Value="Visible" />
+        <Setter Property="Padding"
+                Value="4" />
+        <Setter Property="BorderThickness"
+                Value="1" />
         <Setter Property="BorderBrush">
             <Setter.Value>
-                <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
-                    <GradientStop Color="#FFA3AEB9" Offset="0"/>
-                    <GradientStop Color="#FF8399A9" Offset="0.375"/>
-                    <GradientStop Color="#FF718597" Offset="0.375"/>
-                    <GradientStop Color="#FF617584" Offset="1"/>
+                <LinearGradientBrush EndPoint="0.5,1"
+                                     StartPoint="0.5,0">
+                    <GradientStop Color="#FFA3AEB9"
+                                  Offset="0" />
+                    <GradientStop Color="#FF8399A9"
+                                  Offset="0.375" />
+                    <GradientStop Color="#FF718597"
+                                  Offset="0.375" />
+                    <GradientStop Color="#FF617584"
+                                  Offset="1" />
                 </LinearGradientBrush>
             </Setter.Value>
         </Setter>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="ScrollViewer">
-                    <Border CornerRadius="2" 
-                            BorderBrush="{TemplateBinding BorderBrush}" 
+                    <Border CornerRadius="2"
+                            BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}">
                         <Grid Background="{TemplateBinding Background}">
                             <Grid.RowDefinitions>
-                                <RowDefinition Height="*"/>
-                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
 
                             <ContentPresenter x:Name="ScrollContentPresenter"
                                               Cursor="{TemplateBinding Cursor}"
                                               Margin="{TemplateBinding Padding}"
-                                              ContentTemplate="{TemplateBinding ContentTemplate}"/>
+                                              ContentTemplate="{TemplateBinding ContentTemplate}" />
                             <!--
                             <ScrollContentPresenter x:Name="ScrollContentPresenter"
                                                     Cursor="{TemplateBinding Cursor}"
@@ -67,7 +77,9 @@
                                                     ContentTemplate="{TemplateBinding ContentTemplate}"/>
                             -->
 
-                            <Rectangle Grid.Column="1" Grid.Row="1" Fill="#FFE9EEF4"/>
+                            <Rectangle Grid.Column="1"
+                                       Grid.Row="1"
+                                       Fill="#FFE9EEF4" />
 
                             <!--
                             <ScrollBar x:Name="VerticalScrollBar" Width="18"
@@ -97,21 +109,21 @@
             </Setter.Value>
         </Setter>
     </Style>
-  
+
     <!-- Frame -->
     <Style TargetType="Frame">
-        <Setter Property="IsTabStop" 
-                Value="False"/>
-        <Setter Property="HorizontalContentAlignment" 
-                Value="Stretch"/>
-        <Setter Property="VerticalContentAlignment" 
-                Value="Stretch"/>
-        <Setter Property="Background" 
-                Value="Transparent"/>
-        <Setter Property="BorderBrush" 
-                Value="Transparent"/>
-        <Setter Property="BorderThickness" 
-                Value="1"/>
+        <Setter Property="IsTabStop"
+                Value="False" />
+        <Setter Property="HorizontalContentAlignment"
+                Value="Stretch" />
+        <Setter Property="VerticalContentAlignment"
+                Value="Stretch" />
+        <Setter Property="Background"
+                Value="Transparent" />
+        <Setter Property="BorderBrush"
+                Value="Transparent" />
+        <Setter Property="BorderThickness"
+                Value="1" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Frame">
@@ -124,7 +136,59 @@
                                           Cursor="{TemplateBinding Cursor}"
                                           Margin="{TemplateBinding Padding}"
                                           HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- DataGridCell -->
+    <Style TargetType="DataGridCell">
+        <Setter Property="HorizontalContentAlignment"
+                Value="Stretch" />
+        <Setter Property="VerticalContentAlignment"
+                Value="Stretch" />
+        <Setter Property="BorderBrush"
+                Value="Black" />
+        <Setter Property="BorderThickness"
+                Value="1" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="DataGridCell">
+                    <Border BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            Background="{TemplateBinding Background}">
+                        <ContentPresenter Content="{TemplateBinding Content}"
+                                          ContentTemplate="{TemplateBinding ContentTemplate}"
+                                          HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                          Margin="{TemplateBinding Padding}" />
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- DataGridColumnHeader -->
+    <Style TargetType="DataGridColumnHeader">
+        <Setter Property="HorizontalContentAlignment"
+                Value="Stretch" />
+        <Setter Property="VerticalContentAlignment"
+                Value="Stretch" />
+        <Setter Property="BorderBrush"
+                Value="Black" />
+        <Setter Property="BorderThickness"
+                Value="1" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="DataGridColumnHeader">
+                    <Border BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}">
+                        <ContentPresenter Content="{TemplateBinding Content}"
+                                          ContentTemplate="{TemplateBinding ContentTemplate}"
+                                          HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
                     </Border>
                 </ControlTemplate>
             </Setter.Value>
