@@ -139,6 +139,13 @@ namespace Windows.UI.Xaml.Controls
                     bmpImage.UriSourceChanged -= image.bmpImage_UriSourceChanged;
                     bmpImage.UriSourceChanged += image.bmpImage_UriSourceChanged;
                 }
+                if (newValue is WriteableBitmap)
+                {
+                    WriteableBitmap bmpWriteableBitmap = (WriteableBitmap)newValue;
+                    //we relay the bitmap's events:
+                    bmpWriteableBitmap.UriSourceChanged -= image.bmpImage_UriSourceChanged;
+                    bmpWriteableBitmap.UriSourceChanged += image.bmpImage_UriSourceChanged;
+                }
                 image.RefreshSource();
 
                 image.InvalidateMeasure();
@@ -178,6 +185,18 @@ namespace Windows.UI.Xaml.Controls
                         INTERNAL_HtmlDomManager.SetDomElementAttribute(_imageDiv, "src", dataUrl);
                     }
                     //set the width and height to "inherit" so the image takes up the size defined for it (and applied to _imageDiv's parent):
+                    CSHTML5.Interop.ExecuteJavaScript("$0.style.width = 'inherit'; $0.style.height = 'inherit'", _imageDiv);
+                }
+                else if (Source is WriteableBitmap)
+                {
+                    string url = String.Empty;
+                    WriteableBitmap sourceAsWriteableBitmap = (WriteableBitmap)Source;
+                    if (!string.IsNullOrEmpty(sourceAsWriteableBitmap.INTERNAL_DataURL))
+                    {
+                        string dataUrl = sourceAsWriteableBitmap.INTERNAL_DataURL;
+                        url = dataUrl;
+                        INTERNAL_HtmlDomManager.SetDomElementAttribute(_imageDiv, "src", dataUrl);
+                    }
                     CSHTML5.Interop.ExecuteJavaScript("$0.style.width = 'inherit'; $0.style.height = 'inherit'", _imageDiv);
                 }
             }

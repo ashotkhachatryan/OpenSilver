@@ -11,8 +11,11 @@
 *  
 \*====================================================================================*/
 
+using DotNetForHtml5.Core;
 using System;
 using System.IO;
+using System.Reflection;
+using System.Threading.Tasks;
 
 #if MIGRATION
 namespace System.Windows.Media.Imaging
@@ -25,6 +28,8 @@ namespace Windows.UI.Xaml.Media.Imaging
     /// </summary>
     public abstract partial class BitmapSource : ImageSource
     {
+        internal object BitmapCanvas { get; set; }
+
         bool _isStreamAsBase64StringValid = false;
 
         private string _streamAsBase64String;
@@ -63,7 +68,16 @@ namespace Windows.UI.Xaml.Media.Imaging
         /// <summary>
         /// Provides base class initialization behavior for BitmapSource-derived classes.
         /// </summary>
-        protected BitmapSource() : base() { }
+        protected BitmapSource() :
+            base()
+        {
+            BitmapCanvas = OpenSilver.Interop.ExecuteJavaScript(@"
+(function() {
+    var canvas = document.createElement('canvas');
+    return canvas;
+})();
+");
+        }
 
         private Stream _streamSource;
         public Stream INTERNAL_StreamSource
@@ -73,7 +87,7 @@ namespace Windows.UI.Xaml.Media.Imaging
         }
 
 
-        private string _dataUrl;
+        internal string _dataUrl;
         public string INTERNAL_DataURL
         {
             get { return _dataUrl; }
@@ -106,15 +120,120 @@ namespace Windows.UI.Xaml.Media.Imaging
             INTERNAL_DataURL = dataUrl;
         }
 
+        public Task<bool> SetSourceAsync(Stream stream)
+        {
+            TaskCompletionSource<bool> tcs = new TaskCompletionSource<bool>();
+            Action doneCallback = () =>
+            {
+                tcs.SetResult(true);
+            };
+            SetSource(stream, doneCallback);
+            return tcs.Task;
+        }
+
+        public void SetSource(Stream stream, Action doneCallback)
+        {
+            byte[] bytes = new byte[stream.Length];
+            stream.Read(bytes, 0, (int)stream.Length);
+
+            string base64 = Convert.ToBase64String(bytes);
+            string url = "data:image/png;base64," + base64;
+            LoadImage(url, () =>
+            {
+                doneCallback();
+            });
+        }
+
+        public void LoadImage(Uri uri, Action doneCallback)
+        {
+            string url = uri.OriginalString;
+            if (!uri.IsAbsoluteUri)
+            {
+                string callerAssemblyName = Assembly.GetCallingAssembly().GetName().Name;
+                url = "/" + callerAssemblyName + ";component/" + uri.OriginalString;
+            }
+            LoadImage(url, doneCallback);
+        }
+
+        //internal string _dataURL = "";
+        internal int _pixelWidth = 0;
+        internal int _pixelHeight = 0;
+        internal int[] _pixels = new int[0];
+        public void LoadImage(string url, Action doneCallback)
+        {
+            Action<string, string, string, string> callback = (width, height, dataURL, pixelData) =>
+            {
+                this._dataUrl = dataURL;
+                //INTERNAL_DataURL = this._dataUrl;
+                this._pixelWidth = int.Parse(width);
+                this._pixelHeight = int.Parse(height);
+
+                byte[] bytes = Convert.FromBase64String(pixelData);
+                if (bytes.Length / 4 != 0)
+                {
+                    // We have an issue here
+                }
+                // byte[0] - R
+                // byte[1] - G
+                // byte[2] - B
+                // byte[3] - A (alpha)
+
+                _pixels = new int[bytes.Length / 4];
+                for (int i = 0; i < bytes.Length; i += 4)
+                {
+                    byte[] b = new byte[4] { bytes[i + 3], bytes[i], bytes[i + 1], bytes[i + 2] };
+                    if (BitConverter.IsLittleEndian)
+                    {
+                        Array.Reverse(b);
+                    }
+                    _pixels[(i + 1) / 4] = BitConverter.ToInt32(b, 0);
+                }
+                OnSourceChanged();
+                doneCallback();
+            };
+
+            OpenSilver.Interop.ExecuteJavaScript(@"
+function arrayBufferToBase64( buffer ) {
+    var binary = '';
+    var bytes = new Uint8Array( buffer );
+    var len = bytes.byteLength;
+    for (var i = 0; i < len; i++) {
+        binary += String.fromCharCode( bytes[ i ] );
+    }
+    return window.btoa( binary );
+}
+
+var img = new Image();
+img.src = $1;
+img.onload = function() {
+
+    let canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    canvas.height = img.height;
+    canvas.width = img.width;
+    ctx.drawImage(img, 0, 0);
+    const dataURL = canvas.toDataURL();
+    var pixelData = canvas.getContext('2d').getImageData(0, 0, img.width, img.height).data;
+    canvas = null;
+
+    callback = $2;
+    callback(img.width, img.height, dataURL, arrayBufferToBase64(pixelData));
+};
+", BitmapCanvas, url, callback);
+        }
+
+        internal virtual void OnSourceChanged()
+        {
+
+        }
 
         #region Not supported yet
         /// <summary>
         /// Gets the height of the bitmap in pixels.
         /// </summary>
-        [OpenSilver.NotImplemented]
         public int PixelHeight
         {
-            get { return (int)this.GetValue(BitmapSource.PixelHeightProperty); }
+            get => _pixelHeight;
         }
 
         /// <summary>
@@ -122,16 +241,16 @@ namespace Windows.UI.Xaml.Media.Imaging
         /// 
         /// Returns the identifier for the PixelHeight dependency property.
         /// </summary>
-        [OpenSilver.NotImplemented]
-        public static readonly DependencyProperty PixelHeightProperty = DependencyProperty.Register("PixelHeight", typeof(int), typeof(BitmapSource), new PropertyMetadata(0));
+        //[OpenSilver.NotImplemented]
+        //public static readonly DependencyProperty PixelHeightProperty = DependencyProperty.Register("PixelHeight", typeof(int), typeof(BitmapSource), new PropertyMetadata(0));
 
         /// <summary>
         /// Gets the width of the bitmap in pixels.
         /// </summary>
-        [OpenSilver.NotImplemented]
+        //[OpenSilver.NotImplemented]
         public int PixelWidth
         {
-            get { return (int)this.GetValue(BitmapSource.PixelWidthProperty); }
+            get => _pixelWidth;
         }
 
         /// <summary>
@@ -139,10 +258,10 @@ namespace Windows.UI.Xaml.Media.Imaging
         /// 
         /// Returns the identifier for the PixelWidth dependency property.
         /// </summary>
-        [OpenSilver.NotImplemented]
-        public static readonly DependencyProperty PixelWidthProperty = DependencyProperty.Register("PixelWidth", typeof(int), typeof(BitmapSource), new PropertyMetadata(0));
-        
-        
+        //[OpenSilver.NotImplemented]
+        //public static readonly DependencyProperty PixelWidthProperty = DependencyProperty.Register("PixelWidth", typeof(int), typeof(BitmapSource), new PropertyMetadata(0));
+
+
         ////
         //// Summary:
         ////     Sets the source image for a BitmapSource by accessing a stream and processing

@@ -15,6 +15,7 @@
 using CSHTML5.Internal;
 #endif
 
+using CSHTML5.Internal;
 using System;
 using System.Reflection;
 
@@ -212,6 +213,12 @@ namespace Windows.UI.Xaml.Media.Imaging
             {
                 UriSourceChanged(this, new EventArgs());
             }
+        }
+
+        internal override void OnSourceChanged()
+        {
+            Console.WriteLine("OnSourceChanged");
+            OnUriSourceChanged();
         }
 
         [OpenSilver.NotImplemented]
