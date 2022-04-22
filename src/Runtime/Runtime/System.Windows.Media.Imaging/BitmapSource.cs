@@ -11,10 +11,12 @@
 *  
 \*====================================================================================*/
 
+using DotNetForHtml5;
 using DotNetForHtml5.Core;
 using System;
 using System.IO;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
 #if MIGRATION
@@ -161,18 +163,19 @@ namespace Windows.UI.Xaml.Media.Imaging
         internal int[] _pixels = new int[0];
         public void LoadImage(string url, Action doneCallback)
         {
-            Action<string, string, string, string> callback = (width, height, dataURL, pixelData) =>
+            Action<string, string, string> callback = (width, height, dataURL) =>
             {
                 this._dataUrl = dataURL;
-                //INTERNAL_DataURL = this._dataUrl;
+                INTERNAL_DataURL = this._dataUrl;
                 this._pixelWidth = int.Parse(width);
                 this._pixelHeight = int.Parse(height);
 
-                byte[] bytes = Convert.FromBase64String(pixelData);
-                if (bytes.Length / 4 != 0)
-                {
-                    // We have an issue here
-                }
+
+                int arraySize = this._pixelWidth * this._pixelHeight * 4;
+                byte[] bytes = new byte[arraySize];
+                //IntPtr ptr = Marshal.UnsafeAddrOfPinnedArrayElement(bytes, 0);
+                INTERNAL_Simulator.JavaScriptExecutionHandler.InvokeUnmarshalled<byte[], object>("document.getData", bytes);
+
                 // byte[0] - R
                 // byte[1] - G
                 // byte[2] - B
@@ -181,32 +184,27 @@ namespace Windows.UI.Xaml.Media.Imaging
                 _pixels = new int[bytes.Length / 4];
                 for (int i = 0; i < bytes.Length; i += 4)
                 {
-                    byte[] b = new byte[4] { bytes[i + 3], bytes[i], bytes[i + 1], bytes[i + 2] };
+                    byte[] b = null;
                     if (BitConverter.IsLittleEndian)
                     {
-                        Array.Reverse(b);
+                        b = new byte[4] { bytes[i + 2], bytes[i + 1], bytes[i], bytes[i + 3] };
+                    }
+                    else
+                    {
+                        b = new byte[4] { bytes[i + 3], bytes[i], bytes[i + 1], bytes[i + 2] };
                     }
                     _pixels[(i + 1) / 4] = BitConverter.ToInt32(b, 0);
                 }
+
                 OnSourceChanged();
                 doneCallback();
             };
 
             OpenSilver.Interop.ExecuteJavaScript(@"
-function arrayBufferToBase64( buffer ) {
-    var binary = '';
-    var bytes = new Uint8Array( buffer );
-    var len = bytes.byteLength;
-    for (var i = 0; i < len; i++) {
-        binary += String.fromCharCode( bytes[ i ] );
-    }
-    return window.btoa( binary );
-}
-
+document.pixelData = '';
 var img = new Image();
 img.src = $1;
 img.onload = function() {
-
     let canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
     canvas.height = img.height;
@@ -214,11 +212,19 @@ img.onload = function() {
     ctx.drawImage(img, 0, 0);
     const dataURL = canvas.toDataURL();
     var pixelData = canvas.getContext('2d').getImageData(0, 0, img.width, img.height).data;
+    document.pixelData = pixelData;
     canvas = null;
 
     callback = $2;
-    callback(img.width, img.height, dataURL, arrayBufferToBase64(pixelData));
+    callback(img.width, img.height, dataURL);
 };
+
+document.getData = function(bufferPointer) {
+    const dataPtr = Blazor.platform.getArrayEntryPtr(bufferPointer, 0, 4);
+    const length = Blazor.platform.getArrayLength(bufferPointer);
+    var shorts = new Uint8Array(Module.HEAPU8.buffer, dataPtr, length);
+    shorts.set(new Uint8Array(document.pixelData), 0);
+}
 ", BitmapCanvas, url, callback);
         }
 

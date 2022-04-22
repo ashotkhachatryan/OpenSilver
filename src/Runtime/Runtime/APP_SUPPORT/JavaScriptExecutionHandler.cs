@@ -33,5 +33,15 @@ namespace DotNetForHtml5
             object result = ((JSInProcessRuntime)JSRuntime).Invoke<object>("callJS", javaScriptToExecute);
             return result;
         }
+
+        public TValue Invoke<TValue>(string identifier, params object[] args)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public TResult InvokeUnmarshalled<T0, TResult>(string identifier, T0 arg0)
+        {
+            throw new System.NotImplementedException();
+        }
     }
 }
