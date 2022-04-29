@@ -73,11 +73,8 @@ namespace Windows.UI.Xaml.Media.Imaging
         protected BitmapSource() :
             base()
         {
-            BitmapCanvas = OpenSilver.Interop.ExecuteJavaScript(@"
-(function() {
-    var canvas = document.createElement('canvas');
-    return canvas;
-})();
+            OpenSilver.Interop.ExecuteJavaScript(@"
+document.pixelData = '';
 ");
         }
 
@@ -185,14 +182,14 @@ namespace Windows.UI.Xaml.Media.Imaging
                 for (int i = 0; i < bytes.Length; i += 4)
                 {
                     byte[] b = null;
-                    if (BitConverter.IsLittleEndian)
-                    {
+                    //if (BitConverter.IsLittleEndian)
+                    //{
                         b = new byte[4] { bytes[i + 2], bytes[i + 1], bytes[i], bytes[i + 3] };
-                    }
-                    else
-                    {
-                        b = new byte[4] { bytes[i + 3], bytes[i], bytes[i + 1], bytes[i + 2] };
-                    }
+                    //}
+                    //else
+                    //{
+                    //    b = new byte[4] { bytes[i + 3], bytes[i], bytes[i + 1], bytes[i + 2] };
+                    //}
                     _pixels[(i + 1) / 4] = BitConverter.ToInt32(b, 0);
                 }
 

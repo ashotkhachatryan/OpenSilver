@@ -56,17 +56,17 @@ namespace Windows.UI.Xaml.Media.Imaging
 
         public WriteableBitmap(UIElement element, Transform transform, Action doneCallback = null)
         {
-            Action<string, string, string, string> callback = (width, height, dataURL, pixelData) =>
+            Action<string, string, string> callback = (width, height, dataURL) =>
             {
                 this._dataUrl = dataURL;
                 this._pixelWidth = int.Parse(width);
                 this._pixelHeight = int.Parse(height);
 
-                byte[] bytes = Convert.FromBase64String(pixelData);
-                if (bytes.Length / 4 != 0)
-                {
-                    // We have an issue here
-                }
+                int arraySize = this._pixelWidth * this._pixelHeight * 4;
+                byte[] bytes = new byte[arraySize];
+                //IntPtr ptr = Marshal.UnsafeAddrOfPinnedArrayElement(bytes, 0);
+                INTERNAL_Simulator.JavaScriptExecutionHandler.InvokeUnmarshalled<byte[], object>("document.getData", bytes);
+
                 // byte[0] - R
                 // byte[1] - G
                 // byte[2] - B
@@ -76,14 +76,14 @@ namespace Windows.UI.Xaml.Media.Imaging
                 for (int i = 0; i < bytes.Length; i += 4)
                 {
                     byte[] b = null;
-                    if (BitConverter.IsLittleEndian)
-                    {
+                    //if (BitConverter.IsLittleEndian)
+                    //{
                         b = new byte[4] { bytes[i + 2], bytes[i + 1], bytes[i], bytes[i + 3] };
-                    }
-                    else
-                    {
-                        b = new byte[4] { bytes[i + 3], bytes[i], bytes[i + 1], bytes[i + 2] };
-                    }
+                    //}
+                    //else
+                    //{
+                    //    b = new byte[4] { bytes[i + 3], bytes[i], bytes[i + 1], bytes[i + 2] };
+                    //}
                     _pixels[(i + 1) / 4] = BitConverter.ToInt32(b, 0);
                 }
 
@@ -93,20 +93,12 @@ namespace Windows.UI.Xaml.Media.Imaging
 
             OpenSilver.Interop.ExecuteJavaScript(@"
 
-function arrayBufferToBase64(buffer) {
-    var binary = '';
-    var bytes = new Uint8Array( buffer );
-    var len = bytes.byteLength;
-    for (var i = 0; i < len; i++) {
-        binary += String.fromCharCode( bytes[ i ] );
-    }
-    return window.btoa( binary );
-}
-
 var script = document.createElement('script');
 script.setAttribute('type', 'application/javascript');
 script.setAttribute('src', 'libs/html2canvas.js');
 document.getElementsByTagName('head')[0].appendChild(script);
+
+document.pixelData = '';
 
 script.onload = function() {
     var el = $0;
@@ -114,14 +106,22 @@ script.onload = function() {
         document.body.appendChild(canvas);
 
         const dataURL = canvas.toDataURL();
-        var pixelData = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data;
+        document.pixelData = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data;
 
         callback = $1
-        callback(canvas.width, canvas.height, dataURL, arrayBufferToBase64(pixelData));
+        callback(canvas.width, canvas.height, dataURL);
     });
 
     script.remove();
 }
+
+document.getData = function(bufferPointer) {
+    const dataPtr = Blazor.platform.getArrayEntryPtr(bufferPointer, 0, 4);
+    const length = Blazor.platform.getArrayLength(bufferPointer);
+    var shorts = new Uint8Array(Module.HEAPU8.buffer, dataPtr, length);
+    shorts.set(new Uint8Array(document.pixelData), 0);
+}
+
 ", element.INTERNAL_InnerDomElement, callback);
         }
 
@@ -203,14 +203,14 @@ script.onload = function() {
                 for (int i = 0; i < bytes1.Length; i += 4)
                 {
                     byte[] b = null;
-                    if (BitConverter.IsLittleEndian)
-                    {
+                    //if (BitConverter.IsLittleEndian)
+                    //{
                         b = new byte[4] { bytes1[i + 2], bytes1[i + 1], bytes1[i], bytes1[i + 3] };
-                    }
-                    else
-                    {
-                        b = new byte[4] { bytes1[i + 3], bytes1[i], bytes1[i + 1], bytes1[i + 2] };
-                    }
+                    //}
+                    //else
+                    //{
+                    //    b = new byte[4] { bytes1[i + 3], bytes1[i], bytes1[i + 1], bytes1[i + 2] };
+                    //}
                     _pixels[(i + 1) / 4] = BitConverter.ToInt32(b, 0);
                 }
                 OnSourceChanged();
@@ -222,20 +222,20 @@ script.onload = function() {
             {
                 byte[] b = BitConverter.GetBytes(this._pixels[i]);
 
-                if (BitConverter.IsLittleEndian)
-                {
+                //if (BitConverter.IsLittleEndian)
+                //{
                     bytes[i * 4] = b[2];
                     bytes[i * 4 + 1] = b[1];
                     bytes[i * 4 + 2] = b[0];
                     bytes[i * 4 + 3] = b[3];
-                }
-                else
-                {
-                    bytes[i * 4] = b[1];
-                    bytes[i * 4 + 1] = b[2];
-                    bytes[i * 4 + 2] = b[3];
-                    bytes[i * 4 + 3] = b[0];
-                }
+                //}
+                //else
+                //{
+                //    bytes[i * 4] = b[1];
+                //    bytes[i * 4 + 1] = b[2];
+                //    bytes[i * 4 + 2] = b[3];
+                //    bytes[i * 4 + 3] = b[0];
+                //}
             }
 
             OpenSilver.Interop.ExecuteJavaScript(@"
