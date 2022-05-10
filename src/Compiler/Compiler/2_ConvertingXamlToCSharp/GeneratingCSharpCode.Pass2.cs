@@ -579,12 +579,15 @@ namespace DotNetForHtml5.Compiler
                                             // Append the statement:
                                             if (codeForInstantiatingTheAttributeValue != null)
                                             {
+                                                parameters.StringBuilder.AppendLine("void " + elementUniqueNameOrThisKeyword + "_" + attributeLocalName + "_func() {");
                                                 parameters.StringBuilder.AppendLine(
                                                     string.Format(
                                                         "{0}.{1} = {2};",
                                                         elementUniqueNameOrThisKeyword, attributeLocalName, codeForInstantiatingTheAttributeValue
                                                     )
                                                 );
+                                                parameters.StringBuilder.AppendLine("};");
+                                                parameters.StringBuilder.AppendLine(elementUniqueNameOrThisKeyword + "_" + attributeLocalName + "_func();");
                                             }
 
                                             break;
@@ -854,6 +857,7 @@ namespace DotNetForHtml5.Compiler
                                 parameters.StringBuilder.AppendLine(string.Format("var {0} = new global::System.Collections.Generic.List<global::System.Object>();",
                                     nameForParentsCollection));
 
+                                parameters.StringBuilder.AppendLine("void " + nameForParentsCollection + "_func() {");
                                 while (elementForSearch != null)
                                 {
                                     if (!elementForSearch.Name.LocalName.Contains('.'))
@@ -867,6 +871,8 @@ namespace DotNetForHtml5.Compiler
 
                                     elementForSearch = elementForSearch.Parent;
                                 }
+                                parameters.StringBuilder.AppendLine("};");
+                                parameters.StringBuilder.AppendLine(nameForParentsCollection + "_func();");
 
                                 string[] splittedLocalName = element.Name.LocalName.Split('.');
                                 string propertyKey = GettingInformationAboutXamlTypes.GetKeyNameOfProperty(
