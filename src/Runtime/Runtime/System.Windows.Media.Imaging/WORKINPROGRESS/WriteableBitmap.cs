@@ -103,6 +103,7 @@ document.pixelData = '';
 script.onload = function() {
     var el = $0;
     html2canvas(el).then(canvas => {
+        canvas.setAttribute('crossorigin', 'anonymous');
         document.body.appendChild(canvas);
 
         const dataURL = canvas.toDataURL();
@@ -251,6 +252,7 @@ document.receiveBytes = function(bufferPointer) {
 
             OpenSilver.Interop.ExecuteJavaScript(@"
 var canvas = document.createElement('canvas');
+canvas.setAttribute('crossorigin', 'anonymous');
 canvas.width = $0;
 canvas.height = $1;
 canvas.getContext('2d').createImageData(canvas.width, canvas.height);

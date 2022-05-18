@@ -203,6 +203,7 @@ var img = new Image();
 img.src = $1;
 img.onload = function() {
     let canvas = document.createElement('canvas');
+    canvas.setAttribute('crossorigin', 'anonymous');
     const ctx = canvas.getContext('2d');
     canvas.height = img.height;
     canvas.width = img.width;
