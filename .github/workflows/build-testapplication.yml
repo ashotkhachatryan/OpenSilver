@@ -21,3 +21,7 @@ jobs:
         uses: actions/checkout@v2
         with:
           ref: ${{ github.ref }}
+      - name: Use OpenSilver version
+        run: |
+          dotnet add src\Tests\TestApplication\TestApplication.OpenSilver.Browser\TestApplication.OpenSilver.Browser.csproj package OpenSilver --version 1.1.0-preview-2022-07-26-155722-d2d191e2
+          dotnet add src\Tests\TestApplication\TestApplication\TestApplication.OpenSilver.csproj package OpenSilver --version 1.1.0-preview-2022-07-26-155722-d2d191e2
