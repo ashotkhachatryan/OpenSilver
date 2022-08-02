@@ -1,4 +1,6 @@
 name: TestApplication Build
+env:
+  virtual-directory: 'ashtestapplication/testapplication/develop/opensilver/'
 
 on:
   workflow_run:
@@ -31,7 +33,6 @@ jobs:
         working-directory: src\Tests\TestApplication
         run: |
           sed -i 's\<base href=\"/\" />\<base href=\"/testapplication/develop/opensilver/\" />\g' TestApplication.OpenSilver.Browser/wwwroot/index.html
-          tail -500 TestApplication.OpenSilver.Browser/wwwroot/index.html
       - name: Use OpenSilver version
         working-directory: src\Tests\TestApplication
         run: |
@@ -40,4 +41,4 @@ jobs:
       - name: Build and Deploy
         working-directory: src\Tests\TestApplication
         run: |
-          msbuild TestApplication.OpenSilver.Browser\TestApplication.OpenSilver.Browser.csproj /p:DeployOnBuild=true /p:PublishProfile="TestApplication.OpenSilver.Browser\Properties\PublishProfiles\publish.pubxml" /p:Password=${{ secrets.userPWD }} /p:DeployIisAppPath="ashtestapplication/testapplication/develop/opensilver/"
+          msbuild TestApplication.OpenSilver.Browser\TestApplication.OpenSilver.Browser.csproj /p:DeployOnBuild=true /p:PublishProfile="TestApplication.OpenSilver.Browser\Properties\PublishProfiles\publish.pubxml" /p:Password=${{ secrets.userPWD }} /p:DeployIisAppPath=${{ env.virtual-directory }}
