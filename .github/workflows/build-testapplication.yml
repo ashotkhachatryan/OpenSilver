@@ -31,7 +31,7 @@ jobs:
         working-directory: src\Tests\TestApplication
         run: |
           sed -i 's\<base href="/" />\<base href="/testapplication/develop/opensilver/" />\g' TestApplication.OpenSilver.Browser/wwwroot/index.html
-          cut TestApplication.OpenSilver.Browser\wwwroot\index.html
+          tail -n 100 TestApplication.OpenSilver.Browser/wwwroot/index.html
       - name: Use OpenSilver version
         working-directory: src\Tests\TestApplication
         run: |
