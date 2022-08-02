@@ -27,6 +27,12 @@ jobs:
         uses: actions/checkout@v2
         with:
           ref: ${{ github.ref }}
+      - name: Replace text
+        uses: jacobtomlinson/gha-find-replace@v2
+        with:
+          find: "<base href=\"/\" />"
+          replace: "<base href=\"/testapplication/develop/opensilver/\" />"
+          regex: false
       - name: Use OpenSilver version
         working-directory: src\Tests\TestApplication
         run: |
