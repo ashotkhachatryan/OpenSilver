@@ -1,6 +1,7 @@
 name: TestApplication Build
 env:
-  virtual-directory: 'ashtestapplication/testapplication/develop/opensilver/'
+  virtual-directory: '/testapplication/develop/opensilver/'
+  app-path: 'ashtestapplication/testapplication/develop/opensilver/'
 
 on:
   workflow_run:
@@ -41,4 +42,4 @@ jobs:
       - name: Build and Deploy
         working-directory: src\Tests\TestApplication
         run: |
-          msbuild TestApplication.OpenSilver.Browser\TestApplication.OpenSilver.Browser.csproj /p:DeployOnBuild=true /p:PublishProfile="TestApplication.OpenSilver.Browser\Properties\PublishProfiles\publish.pubxml" /p:Password=${{ secrets.userPWD }} /p:DeployIisAppPath=${{ env.virtual-directory }}
+          msbuild TestApplication.OpenSilver.Browser\TestApplication.OpenSilver.Browser.csproj /p:DeployOnBuild=true /p:PublishProfile="TestApplication.OpenSilver.Browser\Properties\PublishProfiles\publish.pubxml" /p:Password=${{ secrets.userPWD }} /p:DeployIisAppPath=${{ env.app-path }}
