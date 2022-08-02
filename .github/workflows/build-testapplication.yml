@@ -13,38 +13,8 @@ on:
         required: true
         
 jobs:
-  OpenSilver-Build:
-    if: "${{ github.event.inputs.opensilver-version == '' }}"
-    runs-on: windows-latest
-    steps:
-      - uses: microsoft/setup-msbuild@v1.0.3
-      - name: Inject slug/short variables
-        uses: rlespinasse/github-slug-action@v3.x
-      - uses: actions/setup-dotnet@v1
-        with:
-          dotnet-version: '6.0.x'
-      - name: Clone OpenSilver repo
-        uses: actions/checkout@v2
-        with:
-          ref: ${{ github.ref }}
-      - name: Restore Packages
-        run: |
-          ./restore-packages-opensilver.bat
-          nuget restore src/OpenSilver.sln -v quiet
-      - name: Build Compiler
-        run: msbuild src/Compiler/Compiler/Compiler.OpenSilver.csproj -p:Configuration=SL -clp:ErrorsOnly -restore
-      - name: Copy Compiler Assemblies
-        run: cp src/Compiler/Compiler/bin/OpenSilver/SL/net461/OpenSilver.Compiler*dll src/packages/OpenSilver.1.0.0/tools/;
-      - name: Build OpenSilver
-        working-directory: build
-        run: msbuild slnf/OpenSilver.slnf -p:Configuration=SL -clp:ErrorsOnly -restore
-      - name: Format Package Version
-        id: version
-        run: echo "::set-output name=suffix::$(date +'%Y-%m-%d-%H%M%S')-${{ env.GITHUB_SHA_SHORT }}"
   TestApplication-Build:
     runs-on: windows-latest
-    if: always()
-    needs: [OpenSilver-Build]
     steps:
       - uses: microsoft/setup-msbuild@v1.0.3
       - name: Inject slug/short variables
