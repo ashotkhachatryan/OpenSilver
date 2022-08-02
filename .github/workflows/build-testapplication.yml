@@ -5,9 +5,16 @@ on:
     workflows: ['OpenSilver Build']
     types: [completed]
     branches: [develop]
+    
+  workflow_dispatch:
+    inputs:
+      opensilver-version:
+        description: 'OpenSilver package version'
+        default: 'latest'
+        required: true
 
 jobs:
-  TestApplication-Build:
+  on-success:
     runs-on: windows-latest
     steps:
       - uses: microsoft/setup-msbuild@v1.0.3
@@ -23,8 +30,8 @@ jobs:
       - name: Use OpenSilver version
         working-directory: src\Tests\TestApplication
         run: |
-          dotnet add TestApplication.OpenSilver.Browser\TestApplication.OpenSilver.Browser.csproj package OpenSilver --version 1.1.0-preview-2022-07-26-155722-d2d191e2
-          dotnet add TestApplication\TestApplication.OpenSilver.csproj package OpenSilver --version 1.1.0-preview-2022-07-26-155722-d2d191e2
+          dotnet add TestApplication.OpenSilver.Browser\TestApplication.OpenSilver.Browser.csproj package OpenSilver --version 1.1.0-preview-2022-07-28-150415-62f22d76
+          dotnet add TestApplication\TestApplication.OpenSilver.csproj package OpenSilver --version 1.1.0-preview-2022-07-28-150415-62f22d76
       - name: Build and Deploy
         working-directory: src\Tests\TestApplication
         run: |
