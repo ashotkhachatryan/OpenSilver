@@ -2,11 +2,12 @@ name: TestApplication Build
 
 on:
   workflow_run:
-    workflows: [OpenSilverBuild]
+    workflows: ['OpenSilver Build']
     types: [completed]
     branches: [develop]
 
 jobs:
+  on-success:
   TestApplication-Build:
     runs-on: windows-latest
     steps:
