@@ -27,6 +27,7 @@ jobs:
           ref: ${{ github.ref }}
   TestApplication-Build:
     runs-on: windows-latest
+    if: always()
     needs: [OpenSilver-Build]
     steps:
       - uses: microsoft/setup-msbuild@v1.0.3
