@@ -1,12 +1,11 @@
 name: TestApplication Build
+
 on:
-  workflow_dispatch:
-    inputs:
-      opensilver-version:
-        description: 'OpenSilver package version'
-        default: 'latest'
-        required: true
-        
+  workflow_run:
+    workflows: [OpenSilverBuild]
+    types: [completed]
+    branches: [develop]
+
 jobs:
   TestApplication-Build:
     runs-on: windows-latest
@@ -21,3 +20,12 @@ jobs:
         uses: actions/checkout@v2
         with:
           ref: ${{ github.ref }}
+      - name: Use OpenSilver version
+        working-directory: src\Tests\TestApplication
+        run: |
+          dotnet add TestApplication.OpenSilver.Browser\TestApplication.OpenSilver.Browser.csproj package OpenSilver --version 1.1.0-preview-2022-07-26-155722-d2d191e2
+          dotnet add TestApplication\TestApplication.OpenSilver.csproj package OpenSilver --version 1.1.0-preview-2022-07-26-155722-d2d191e2
+      - name: Build and Deploy
+        working-directory: src\Tests\TestApplication
+        run: |
+          msbuild TestApplication.OpenSilver.Browser\TestApplication.OpenSilver.Browser.csproj /p:DeployOnBuild=true /p:PublishProfile="TestApplication.OpenSilver.Browser\Properties\PublishProfiles\publish.pubxml" /p:Password=${{ secrets.userPWD }}
