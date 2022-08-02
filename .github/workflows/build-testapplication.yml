@@ -14,7 +14,7 @@ on:
         required: true
 
 jobs:
-  on-success:
+  TestApplicationBuild:
     runs-on: windows-latest
     steps:
       - uses: microsoft/setup-msbuild@v1.0.3
