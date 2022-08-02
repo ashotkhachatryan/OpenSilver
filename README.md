@@ -7,7 +7,7 @@ The main branches are:
 - **master**: this branch corresponds to the version of the packages that are on Nuget.org
 
 
-# How to download the software and get started?
+# How to download the software and get started? 
 
 Read the "[Getting Started](http://doc.opensilver.net/documentation/general/getting-started-tour.html)" page of the OpenSilver [documentation](http://doc.opensilver.net/) for a step-by-step tutorial.
 

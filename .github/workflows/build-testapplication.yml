@@ -27,6 +27,7 @@ jobs:
           ref: ${{ github.ref }}
   TestApplication-Build:
     runs-on: windows-latest
+    needs: [OpenSilver-Build]
     steps:
       - uses: microsoft/setup-msbuild@v1.0.3
       - name: Inject slug/short variables
