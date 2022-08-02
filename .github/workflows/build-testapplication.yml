@@ -1,5 +1,8 @@
 name: TestApplication Build
 on:
+  push:
+    branches:
+      - testapplication_cicd
   workflow_dispatch:
     inputs:
       opensilver-version:
