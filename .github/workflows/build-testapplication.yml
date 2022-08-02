@@ -8,6 +8,20 @@ on:
         required: true
         
 jobs:
+  OpenSilver-Build:
+    if: "${{ github.event.inputs.opensilver-version == '' }}"
+    runs-on: windows-latest
+    steps:
+      - uses: microsoft/setup-msbuild@v1.0.3
+      - name: Inject slug/short variables
+        uses: rlespinasse/github-slug-action@v3.x
+      - uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '6.0.x'
+      - name: Clone OpenSilver repo
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.ref }}
   TestApplication-Build:
     runs-on: windows-latest
     steps:
