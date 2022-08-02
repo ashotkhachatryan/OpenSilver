@@ -7,26 +7,26 @@ on:
     branches: [develop]
 
 jobs:
-  on-success:
   TestApplication-Build:
-    runs-on: windows-latest
-    steps:
-      - uses: microsoft/setup-msbuild@v1.0.3
-      - name: Inject slug/short variables
-        uses: rlespinasse/github-slug-action@v3.x
-      - uses: actions/setup-dotnet@v1
-        with:
-          dotnet-version: '6.0.101'
-      - name: Clone repo
-        uses: actions/checkout@v2
-        with:
-          ref: ${{ github.ref }}
-      - name: Use OpenSilver version
-        working-directory: src\Tests\TestApplication
-        run: |
-          dotnet add TestApplication.OpenSilver.Browser\TestApplication.OpenSilver.Browser.csproj package OpenSilver --version 1.1.0-preview-2022-07-26-155722-d2d191e2
-          dotnet add TestApplication\TestApplication.OpenSilver.csproj package OpenSilver --version 1.1.0-preview-2022-07-26-155722-d2d191e2
-      - name: Build and Deploy
-        working-directory: src\Tests\TestApplication
-        run: |
-          msbuild TestApplication.OpenSilver.Browser\TestApplication.OpenSilver.Browser.csproj /p:DeployOnBuild=true /p:PublishProfile="TestApplication.OpenSilver.Browser\Properties\PublishProfiles\publish.pubxml" /p:Password=${{ secrets.userPWD }}
+    on-success:
+      runs-on: windows-latest
+      steps:
+        - uses: microsoft/setup-msbuild@v1.0.3
+        - name: Inject slug/short variables
+          uses: rlespinasse/github-slug-action@v3.x
+        - uses: actions/setup-dotnet@v1
+          with:
+            dotnet-version: '6.0.101'
+        - name: Clone repo
+          uses: actions/checkout@v2
+          with:
+            ref: ${{ github.ref }}
+        - name: Use OpenSilver version
+          working-directory: src\Tests\TestApplication
+          run: |
+            dotnet add TestApplication.OpenSilver.Browser\TestApplication.OpenSilver.Browser.csproj package OpenSilver --version 1.1.0-preview-2022-07-26-155722-d2d191e2
+            dotnet add TestApplication\TestApplication.OpenSilver.csproj package OpenSilver --version 1.1.0-preview-2022-07-26-155722-d2d191e2
+        - name: Build and Deploy
+          working-directory: src\Tests\TestApplication
+          run: |
+            msbuild TestApplication.OpenSilver.Browser\TestApplication.OpenSilver.Browser.csproj /p:DeployOnBuild=true /p:PublishProfile="TestApplication.OpenSilver.Browser\Properties\PublishProfiles\publish.pubxml" /p:Password=${{ secrets.userPWD }}
