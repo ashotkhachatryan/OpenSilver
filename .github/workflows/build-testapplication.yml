@@ -35,4 +35,4 @@ jobs:
       - name: Build and Deploy
         working-directory: src\Tests\TestApplication
         run: |
-          msbuild TestApplication.OpenSilver.Browser\TestApplication.OpenSilver.Browser.csproj /p:DeployOnBuild=true /p:PublishProfile="TestApplication.OpenSilver.Browser\Properties\PublishProfiles\publish.pubxml" /p:Password=${{ secrets.userPWD }}
+          msbuild TestApplication.OpenSilver.Browser\TestApplication.OpenSilver.Browser.csproj /p:DeployOnBuild=true /p:PublishProfile="TestApplication.OpenSilver.Browser\Properties\PublishProfiles\publish.pubxml" /p:Password=${{ secrets.userPWD }} /p:DeployIisAppPath="ashtestapplication"
