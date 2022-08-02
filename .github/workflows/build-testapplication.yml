@@ -1,17 +1,11 @@
 name: TestApplication Build
+
 on:
   workflow_run:
-    workflows:
-      - OpenSilverBuild
-    types:
-      - completed
-  workflow_dispatch:
-    inputs:
-      opensilver-version:
-        description: 'OpenSilver package version'
-        default: 'latest'
-        required: true
-        
+    workflows: [OpenSilverBuild]
+    types: [completed]
+    branches: [testapplication_cicd]
+
 jobs:
   TestApplication-Build:
     runs-on: windows-latest
