@@ -28,11 +28,9 @@ jobs:
         with:
           ref: ${{ github.ref }}
       - name: Replace text
-        uses: jacobtomlinson/gha-find-replace@v2
-        with:
-          find: "<base href=\"/\" />"
-          replace: "<base href=\"/testapplication/develop/opensilver/\" />"
-          regex: false
+        run: |
+          sed
+          powershell -Command "ls"
       - name: Use OpenSilver version
         working-directory: src\Tests\TestApplication
         run: |
