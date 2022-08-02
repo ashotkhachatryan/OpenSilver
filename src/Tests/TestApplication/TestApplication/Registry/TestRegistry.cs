@@ -19,7 +19,7 @@ namespace TestApplication
             Tests.Add(new Test("ComboBox", "ComboBox"));
             Tests.Add(new Test("AutoCompleteBox", "AutoCompleteBox"));
             Tests.Add(new Test("Negative Margin", "Negative Margin"));
-            Tests.Add(new Test("LinQqqqq1", "LinQ"));
+            Tests.Add(new Test("LinQqqqq2", "LinQ"));
             Tests.Add(new Test("Opacity", "IsHitTestVisible Opacity"));
             Tests.Add(new Test("IsHitTestVisible", "IsHitTestVisible Opacity"));
             Tests.Add(new Test("ChildWindow", "ChildWindow"));
