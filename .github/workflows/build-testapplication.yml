@@ -1,7 +1,7 @@
 name: TestApplication Build
 env:
   virtual-directory: '/testapplication/develop/opensilver/'
-  app-path: 'ashtestapplication${{ env.virtual-directory }}'
+  app-path: 'ashtestapplication::${{ env.virtual-directory }}'
 
 on:
   workflow_run:
