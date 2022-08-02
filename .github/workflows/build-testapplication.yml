@@ -31,12 +31,12 @@ jobs:
         working-directory: src\Tests\TestApplication
         run: |
           sed -e 's\<base href=\"/\" />\<base href=\"/testapplication/develop/opensilver/\" />\g' TestApplication.OpenSilver.Browser/wwwroot/index.html
-      #- name: Use OpenSilver version
-      #  working-directory: src\Tests\TestApplication
-      #  run: |
-      #    dotnet add TestApplication.OpenSilver.Browser\TestApplication.OpenSilver.Browser.csproj package OpenSilver --version 1.1.0-preview-2022-07-28-150415-62f22d76
-      #    dotnet add TestApplication\TestApplication.OpenSilver.csproj package OpenSilver --version 1.1.0-preview-2022-07-28-150415-62f22d76
-      #- name: Build and Deploy
-      #  working-directory: src\Tests\TestApplication
-      #  run: |
-      #    msbuild TestApplication.OpenSilver.Browser\TestApplication.OpenSilver.Browser.csproj /p:DeployOnBuild=true /p:PublishProfile="TestApplication.OpenSilver.Browser\Properties\PublishProfiles\publish.pubxml" /p:Password=${{ secrets.userPWD }} /p:DeployIisAppPath="ashtestapplication/testapplication/develop/opensilver/"
+      - name: Use OpenSilver version
+        working-directory: src\Tests\TestApplication
+        run: |
+          dotnet add TestApplication.OpenSilver.Browser\TestApplication.OpenSilver.Browser.csproj package OpenSilver --version 1.1.0-preview-2022-07-28-150415-62f22d76
+          dotnet add TestApplication\TestApplication.OpenSilver.csproj package OpenSilver --version 1.1.0-preview-2022-07-28-150415-62f22d76
+      - name: Build and Deploy
+        working-directory: src\Tests\TestApplication
+        run: |
+          msbuild TestApplication.OpenSilver.Browser\TestApplication.OpenSilver.Browser.csproj /p:DeployOnBuild=true /p:PublishProfile="TestApplication.OpenSilver.Browser\Properties\PublishProfiles\publish.pubxml" /p:Password=${{ secrets.userPWD }} /p:DeployIisAppPath="ashtestapplication/testapplication/develop/opensilver/"
