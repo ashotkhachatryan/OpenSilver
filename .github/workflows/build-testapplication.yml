@@ -30,7 +30,7 @@ jobs:
       - name: Replace text
         working-directory: src\Tests\TestApplication
         run: |
-          sed -e 's\<base href="/" />\cde\g' TestApplication.OpenSilver.Browser/wwwroot/index.html
+          sed -e 's\base href="/"\cde\g' TestApplication.OpenSilver.Browser/wwwroot/index.html
       - name: Use OpenSilver version
         working-directory: src\Tests\TestApplication
         run: |
