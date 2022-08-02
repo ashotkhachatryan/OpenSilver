@@ -1,7 +1,8 @@
 name: TestApplication Build
 on:
   workflow_run:
-    workflows: ['OpenSilver Build']
+    workflows:
+      - OpenSilverBuild
     types:
       - completed
   workflow_dispatch:
