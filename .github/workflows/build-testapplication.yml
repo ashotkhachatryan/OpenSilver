@@ -28,9 +28,10 @@ jobs:
         with:
           ref: ${{ github.ref }}
       - name: Replace text
+        working-directory: src\Tests\TestApplication
         run: |
-          sed
-          powershell -Command "ls"
+          sed -i 's/<base href=\"/\" />/<base href=\"/testapplication/develop/opensilver/\" />/g' TestApplication.OpenSilver.Browser\wwwroot\index.html
+          cut TestApplication.OpenSilver.Browser\wwwroot\index.html
       - name: Use OpenSilver version
         working-directory: src\Tests\TestApplication
         run: |
