@@ -2,6 +2,7 @@ name: TestApplication Build
 env:
   virtual-directory: '/testapplication/develop/opensilver/'
   app-path: 'ashtestapplication/testapplication/develop/opensilver/'
+  next-release-version: '1.1.0'
 
 on:
   workflow_run:
@@ -17,8 +18,44 @@ on:
         required: true
 
 jobs:
+  OpenSilverBuild:
+    runs-on: windows-latest
+    steps:
+      - uses: microsoft/setup-msbuild@v1.1
+      - name: Inject slug/short variables
+        uses: rlespinasse/github-slug-action@v3.x
+      - uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '6.0.202'
+      - name: Clone OpenSilver repo
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.ref }}
+      - name: Restore Packages
+        run: |
+          ./restore-packages-opensilver.bat
+          nuget restore src/OpenSilver.sln -v quiet
+      - name: Build Compiler
+        run: msbuild src/Compiler/Compiler/Compiler.OpenSilver.csproj -p:Configuration=SL -clp:ErrorsOnly -restore
+      - name: Copy Compiler Assemblies
+        run: cp src/Compiler/Compiler/bin/OpenSilver/SL/net461/OpenSilver.Compiler*dll src/packages/OpenSilver.1.0.0/tools/;
+      - name: Build OpenSilver
+        working-directory: build
+        run: msbuild slnf/OpenSilver.slnf -p:Configuration=SL -clp:ErrorsOnly -restore
+      - name: Format Version Suffix
+        id: format-suffix
+        run: echo "::set-output name=suffix::$(date +'%Y-%m-%d-%H%M%S')-${{ env.GITHUB_SHA_SHORT }}"
+      - name: Format Package Version
+        id: format-version
+        run: echo "::set-output name=version::${{ env.next-release-version }}-preview-${{ steps.format-suffix.outputs.suffix }}"
+      - name: Pack OpenSilver
+        working-directory: build
+        run: |
+          mkdir temp; echo "OpenSilver ${{ steps.format-version.outputs.version }}" > temp/Version.txt
+          nuget.exe pack nuspec\OpenSilver.nuspec -OutputDirectory "output/OpenSilver" -Properties "PackageId=OpenSilver;PackageVersion=${{ steps.format-version.outputs.version }};Configuration=SL;Target=OpenSilver;RepositoryUrl=https://github.com/${{ env.GITHUB_REPOSITORY_OWNER_PART }}/${{ env.GITHUB_REPOSITORY_NAME_PART }}"
   TestApplicationBuild:
     runs-on: windows-latest
+    needs: OpenSilverBuild
     steps:
       - uses: microsoft/setup-msbuild@v1.0.3
       - name: Inject slug/short variables
@@ -37,6 +74,7 @@ jobs:
       - name: Use OpenSilver version
         working-directory: src\Tests\TestApplication
         run: |
+          ls ../../../build/output/OpenSilver/
           dotnet add TestApplication.OpenSilver.Browser\TestApplication.OpenSilver.Browser.csproj package OpenSilver --version 1.1.0-preview-2022-07-28-150415-62f22d76
           dotnet add TestApplication\TestApplication.OpenSilver.csproj package OpenSilver --version 1.1.0-preview-2022-07-28-150415-62f22d76
       - name: Build and Deploy
