@@ -65,7 +65,7 @@ jobs:
         working-directory: src\Tests\TestApplication
         if: github.ref == 'refs/heads/develop'
         run: |
-          msbuild TestApplication.OpenSilver.Browser\TestApplication.OpenSilver.Browser.csproj /p:DeployOnBuild=true /p:PublishProfile="TestApplication.OpenSilver.Browser\Properties\PublishProfiles\publish.pubxml" /p:UserName=${{ secrets.userName }};Password=${{ secrets.userPWD }} /p:DeployIisAppPath=${{ env.app-path }}
+          msbuild TestApplication.OpenSilver.Browser\TestApplication.OpenSilver.Browser.csproj /p:DeployOnBuild=true /p:PublishProfile="TestApplication.OpenSilver.Browser\Properties\PublishProfiles\publish.pubxml" /p:UserName="${{ secrets.userName }}";Password="${{ secrets.userPWD }}" /p:DeployIisAppPath=${{ env.app-path }}
       - name: Build and Deploy release
         if: github.ref == 'refs/heads/throw_fix'
         working-directory: src\Tests\TestApplication
