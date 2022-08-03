@@ -61,8 +61,9 @@ jobs:
         working-directory: src\Tests\TestApplication
         run: |
           ls ../../../build/output/OpenSilver/
-          dotnet add TestApplication.OpenSilver.Browser\TestApplication.OpenSilver.Browser.csproj package OpenSilver --version 1.1.0-preview-2022-07-28-150415-62f22d76
-          dotnet add TestApplication\TestApplication.OpenSilver.csproj package OpenSilver --version 1.1.0-preview-2022-07-28-150415-62f22d76
+          dotnet add TestApplication.OpenSilver.Browser\TestApplication.OpenSilver.Browser.csproj package OpenSilver --version ${{ steps.format-version.outputs.version }} -s ../../../build/output/OpenSilver/
+          dotnet add TestApplication\TestApplication.OpenSilver.csproj package OpenSilver --version ${{ steps.format-version.outputs.version }} -s ../../../build/output/OpenSilver/
+          tail -500 TestApplication.OpenSilver.Browser\TestApplication.OpenSilver.Browser.csproj
       - name: Build and Deploy
         working-directory: src\Tests\TestApplication
         run: |
