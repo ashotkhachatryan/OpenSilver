@@ -5,6 +5,7 @@ env:
   app-path: 'ashtestapplication/testapplication/develop/opensilver/'
   virtual-directory-release: '/testapplication/release/opensilver/'
   app-path-release: 'ashtestapplication/testapplication/release/opensilver/'
+  deploy-service-url: 'ashtestapplication.scm.azurewebsites.net:443'
   next-release-version: '1.1.0'
 
 on:
@@ -65,7 +66,7 @@ jobs:
         working-directory: src\Tests\TestApplication
         if: github.ref == 'refs/heads/develop'
         run: |
-          msbuild TestApplication.OpenSilver.Browser\TestApplication.OpenSilver.Browser.csproj /p:DeployOnBuild=true /p:PublishProfile="TestApplication.OpenSilver.Browser\Properties\PublishProfiles\publish.pubxml" /p:username=${{ secrets.userName }} /p:Password=${{ secrets.userPWD }} /p:DeployIisAppPath=${{ env.app-path }} /p:AuthType=NTLM
+          msbuild TestApplication.OpenSilver.Browser\TestApplication.OpenSilver.Browser.csproj /p:DeployOnBuild=true /p:PublishProfile="TestApplication.OpenSilver.Browser\Properties\PublishProfiles\publish.pubxml" /p:Password=${{ secrets.userPWD }} /p:DeployIisAppPath=${{ env.app-path }} /p:MSDeployServiceURL=${{ env.deploy-service-url }}
       - name: Build and Deploy release
         if: github.ref == 'refs/heads/throw_fix'
         working-directory: src\Tests\TestApplication
