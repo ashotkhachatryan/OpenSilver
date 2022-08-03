@@ -20,7 +20,6 @@ on:
 jobs:
   TestApplicationBuild:
     runs-on: windows-latest
-    needs: OpenSilverBuild
     steps:
       - uses: microsoft/setup-msbuild@v1.1
       - name: Inject slug/short variables
