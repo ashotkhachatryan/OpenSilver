@@ -54,7 +54,7 @@ jobs:
       - name: Replace text release
         working-directory: src\Tests\TestApplication
         run: |
-          $version = ${{ env.virtual-directory }}
+          $version = "${{ env.virtual-directory }}"
           if ${{ github.ref == 'refs/heads/throw_fix' }} {
             $version = ${{ env.virtual-directory-release }}
           }
