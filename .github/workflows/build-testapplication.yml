@@ -2,10 +2,10 @@ name: TestApplication Build
 
 env:
   virtual-directory: '/testapplication/develop/opensilver/'
-  app-path: 'ashtestapplication/testapplication/develop/opensilver/'
+  app-path: 'opensilverdemos/testapplication/develop/opensilver/'
   virtual-directory-release: '/testapplication/release/opensilver/'
-  app-path-release: 'ashtestapplication/testapplication/release/opensilver/'
-  deploy-service-url: 'ashtestapplication.scm.azurewebsites.net:443'
+  app-path-release: 'opensilverdemos/testapplication/release/opensilver/'
+  deploy-service-url: 'opensilverdemos.scm.azurewebsites.net:443'
   next-release-version: '1.1.0'
 
 on:
@@ -61,7 +61,6 @@ jobs:
         working-directory: src\Tests\TestApplication
         run: |
           sed -i 's\USERNAME\${{ secrets.OPENSILVERDEMOSUSERNAME }}\g' TestApplication.OpenSilver.Browser\Properties\PublishProfiles\publish.pubxml
-          tail -500 TestApplication.OpenSilver.Browser\Properties\PublishProfiles\publish.pubxml
       - name: Use OpenSilver version
         working-directory: src\Tests\TestApplication
         run: |
