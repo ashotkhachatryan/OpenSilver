@@ -57,6 +57,11 @@ jobs:
         working-directory: src\Tests\TestApplication
         run: |
           sed -i 's\<base href=\"/\" />\<base href=\"${{ env.virtual-directory-release }}\" />\g' TestApplication.OpenSilver.Browser/wwwroot/index.html
+      - name: Replace UserName
+        working-directory: src\Tests\TestApplication
+        run: |
+          sed -i 's\USERNAME\${{ secrets.UserName }}\g' TestApplication.OpenSilver.Browser\Properties\PublishProfiles\publish.pubxml
+          tail -500 TestApplication.OpenSilver.Browser\Properties\PublishProfiles\publish.pubxml
       - name: Use OpenSilver version
         working-directory: src\Tests\TestApplication
         run: |
