@@ -21,7 +21,7 @@ jobs:
           echo "vdir=${{ env.virtual-directory }}" >> $env:GITHUB_ENV
           echo "apath=${{ env.app-path }}" >> $env:GITHUB_ENV
       - name: Set directory environment variables
-        if: "${{ github.ref == 'refs/heads/throw_fix' }}"
+        if: "${{ github.ref == 'refs/heads/releases/OpenSilver/1.1.0' }}"
         run: |
           echo "vdir=${{ env.virtual-directory-release }}" >> $env:GITHUB_ENV
           echo "apath=${{ env.app-path-release }}" >> $env:GITHUB_ENV
@@ -57,16 +57,10 @@ jobs:
         run: |
           mkdir temp; echo "OpenSilver ${{ steps.format-version.outputs.version }}" > temp/Version.txt
           nuget.exe pack nuspec\OpenSilver.nuspec -OutputDirectory "output/OpenSilver" -Properties "PackageId=OpenSilver;PackageVersion=${{ steps.format-version.outputs.version }};Configuration=SL;Target=OpenSilver;RepositoryUrl=https://github.com/${{ env.GITHUB_REPOSITORY_OWNER_PART }}/${{ env.GITHUB_REPOSITORY_NAME_PART }}"
-      - name: Replace text develop
-        if: github.ref == 'refs/heads/develop'
+      - name: Replace text
         working-directory: src\Tests\TestApplication
         run: |
-          sed -i 's\<base href=\"/\" />\<base href=\"${{ env.virtual-directory }}\" />\g' TestApplication.OpenSilver.Browser/wwwroot/index.html
-      - name: Replace text release
-        if: github.ref == 'refs/heads/throw_fix'
-        working-directory: src\Tests\TestApplication
-        run: |
-          sed -i 's\<base href=\"/\" />\<base href=\"${{ env.virtual-directory-release }}\" />\g' TestApplication.OpenSilver.Browser/wwwroot/index.html
+          sed -i 's\<base href=\"/\" />\<base href=\"${{ env.vdir }}\" />\g' TestApplication.OpenSilver.Browser/wwwroot/index.html
       - name: Replace UserName
         working-directory: src\Tests\TestApplication
         run: |
@@ -76,13 +70,8 @@ jobs:
         run: |
           dotnet add TestApplication.OpenSilver.Browser\TestApplication.OpenSilver.Browser.csproj package OpenSilver --version ${{ steps.format-version.outputs.version }} -s ../../../build/output/OpenSilver/
           dotnet add TestApplication\TestApplication.OpenSilver.csproj package OpenSilver --version ${{ steps.format-version.outputs.version }} -s ../../../build/output/OpenSilver/
-      - name: Build and Deploy develop
+      - name: Build and Deploy
         working-directory: src\Tests\TestApplication
         if: github.ref == 'refs/heads/develop'
         run: |
-          msbuild TestApplication.OpenSilver.Browser\TestApplication.OpenSilver.Browser.csproj /p:DeployOnBuild=true /p:PublishProfile="TestApplication.OpenSilver.Browser\Properties\PublishProfiles\publish.pubxml" /p:Password=${{ secrets.OPENSILVERDEMOSUSERPWD }} /p:DeployIisAppPath=${{ env.app-path }} /p:MSDeployServiceURL=${{ env.deploy-service-url }}
-      - name: Build and Deploy release
-        if: github.ref == 'refs/heads/throw_fix'
-        working-directory: src\Tests\TestApplication
-        run: |
-          msbuild TestApplication.OpenSilver.Browser\TestApplication.OpenSilver.Browser.csproj /p:DeployOnBuild=true /p:PublishProfile="TestApplication.OpenSilver.Browser\Properties\PublishProfiles\publish.pubxml" /p:Password=${{ secrets.OPENSILVERDEMOSUSERPWD }} /p:UserName=${{ secrets.userName }} /p:DeployIisAppPath=${{ env.app-path-release }}
+          msbuild TestApplication.OpenSilver.Browser\TestApplication.OpenSilver.Browser.csproj /p:DeployOnBuild=true /p:PublishProfile="TestApplication.OpenSilver.Browser\Properties\PublishProfiles\publish.pubxml" /p:Password=${{ secrets.OPENSILVERDEMOSUSERPWD }} /p:DeployIisAppPath=${{ env.apath }} /p:MSDeployServiceURL=${{ env.deploy-service-url }}
