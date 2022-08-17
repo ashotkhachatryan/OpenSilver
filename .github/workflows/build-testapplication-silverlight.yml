@@ -27,7 +27,7 @@ jobs:
           echo "apath=${{ env.app-path-release }}" >> $env:GITHUB_ENV
       - uses: microsoft/setup-msbuild@v1.1
         with:
-          vs-version: 16.0
+          vs-version: 14.0
       - name: Inject slug/short variables
         uses: rlespinasse/github-slug-action@v3.x
       - name: Clone OpenSilver repo
