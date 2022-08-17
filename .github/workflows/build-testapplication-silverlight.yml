@@ -1,4 +1,4 @@
-name: TestApplication Build
+name: TestApplication Silverlight Build
 
 env:
   virtual-directory: '/testapplication/develop/silverlight/'
