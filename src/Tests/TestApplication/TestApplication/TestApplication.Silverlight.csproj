@@ -14,6 +14,7 @@
     <TargetFrameworkIdentifier>Silverlight</TargetFrameworkIdentifier>
 	<TargetFrameworkDirectory>..\dll\</TargetFrameworkDirectory>
     <TargetFrameworkVersion>v5.0</TargetFrameworkVersion>
+	<SilverlightRuntimeVersion>5.0</SilverlightRuntimeVersion>
     <SilverlightVersion>$(TargetFrameworkVersion)</SilverlightVersion>
     <SilverlightApplication>true</SilverlightApplication>
     <SupportedCultures>
