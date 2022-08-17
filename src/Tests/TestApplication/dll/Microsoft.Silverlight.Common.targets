@@ -101,7 +101,9 @@ Copyright (C) Microsoft Corporation. All rights reserved.
             <Output TaskParameter="Value" PropertyName="AssemblySearchPaths"/>
         </CreateProperty>
 
-
+        <ValidateSilverlightFrameworkPaths
+            TargetFrameworkDirectory = "$(TargetFrameworkDirectory)"
+        />
         
     </Target>
 

@@ -12,6 +12,7 @@
     <RootNamespace>TestApplication</RootNamespace>
     <AssemblyName>TestApplication.Silverlight</AssemblyName>
     <TargetFrameworkIdentifier>Silverlight</TargetFrameworkIdentifier>
+	<TargetFrameworkDirectory>..\dll\</TargetFrameworkDirectory>
     <TargetFrameworkVersion>v5.0</TargetFrameworkVersion>
     <SilverlightVersion>$(TargetFrameworkVersion)</SilverlightVersion>
     <SilverlightApplication>true</SilverlightApplication>
