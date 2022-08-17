@@ -35,4 +35,4 @@ jobs:
       - name: Build application
         working-directory: src\Tests\TestApplication
         run: |
-          msbuild TestApplication.Silverlight.sln /p:ReferencePath="..\dll"
+          msbuild TestApplication.Silverlight.sln /p:ReferencePath="..\dll" -verbosity:detailed
