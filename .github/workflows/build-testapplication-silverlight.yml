@@ -36,9 +36,9 @@ jobs:
         uses: actions/checkout@v2
         with:
           repository: ashotkhachatryan/SilverlightDlls
-          token: ${{ secrets.MY_TOKEN }}
+          token: ${{ secrets.ACCESS_TOKEN }}
           path: './src/Tests/TestApplication/dll'
       - name: Build and deploy
         working-directory: src\Tests\TestApplication
         run: |
-          msbuild TestApplication.Silverlight.sln /p:ReferencePath="..\dll" /p:DeployOnBuild=true /p:PublishProfile="publish.pubxml" /p:Password=${{ secrets.OPENSILVERDEMOSUSERPWD }} -verbosity:detailed
+          msbuild TestApplication.Silverlight.sln /p:ReferencePath="..\dll" /p:DeployOnBuild=true /p:PublishProfile="publish.pubxml" /p:Password=${{ secrets.OPENSILVERDEMOSUSERPWD }}
