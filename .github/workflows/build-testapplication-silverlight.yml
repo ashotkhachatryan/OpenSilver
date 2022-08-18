@@ -37,7 +37,7 @@ jobs:
         with:
           repository: ashotkhachatryan/SilverlightDlls
           token: ${{ secrets.MY_TOKEN }}
-          path: './SilverlightDlls'
+          path: './src/Tests/TestApplication/dll'
       - name: Build and deploy
         working-directory: src\Tests\TestApplication
         run: |
