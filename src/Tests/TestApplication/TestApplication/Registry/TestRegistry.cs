@@ -9,7 +9,7 @@ namespace TestApplication
         static TestRegistry()
         {
             Tests.Add(new Test("Sandbox", "Sandbox"));
-            Tests.Add(new Test("CheckBox indeterminate", "CheckBox indeterminate"));
+            Tests.Add(new Test("CheckBox indeterminate11", "CheckBox indeterminate"));
             Tests.Add(new Test("Double Click", "Double Click"));
             Tests.Add(new Test("Right Click", "Right Click"));
             Tests.Add(new Test("ToolTip", "ToolTip"));
