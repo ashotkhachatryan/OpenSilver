@@ -38,6 +38,10 @@ jobs:
           repository: ashotkhachatryan/SilverlightDlls
           token: ${{ secrets.ACCESS_TOKEN }}
           path: './src/Tests/TestApplication/dll'
+      - name: Replace UserName
+        working-directory: src\Tests\TestApplication
+        run: |
+          sed -i 's\USERNAME\${{ secrets.OPENSILVERDEMOSUSERNAME }}\g' TestApplication.Silverlight.Web\Properties\PublishProfiles\publish.pubxml
       - name: Build and deploy
         working-directory: src\Tests\TestApplication
         run: |
