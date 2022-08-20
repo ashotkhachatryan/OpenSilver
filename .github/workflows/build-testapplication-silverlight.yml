@@ -1,0 +1,48 @@
+name: TestApplication Silverlight Build
+
+env:
+  virtual-directory: '/testapplication/develop/silverlight/'
+  app-path: 'opensilverdemos/testapplication/develop/silverlight/'
+  virtual-directory-release: '/testapplication/release/silverlight/'
+  app-path-release: 'opensilverdemos/testapplication/release/silverlight/'
+  deploy-service-url: 'opensilverdemos.scm.azurewebsites.net:443'
+  next-release-version: '1.1.0'
+
+on:
+  workflow_dispatch:
+
+jobs:
+  TestApplicationBuild:
+    runs-on: windows-2019
+    steps:
+      - name: Set directory environment variables
+        if: "${{ github.ref == 'refs/heads/cicd_silverlight_test' }}"
+        run: |
+          echo "vdir=${{ env.virtual-directory }}" >> $env:GITHUB_ENV
+          echo "apath=${{ env.app-path }}" >> $env:GITHUB_ENV
+      - name: Set directory environment variables
+        if: "${{ github.ref == 'refs/heads/releases/OpenSilver/1.1.0_test' }}"
+        run: |
+          echo "vdir=${{ env.virtual-directory-release }}" >> $env:GITHUB_ENV
+          echo "apath=${{ env.app-path-release }}" >> $env:GITHUB_ENV
+      - uses: microsoft/setup-msbuild@v1.1
+      - name: Inject slug/short variables
+        uses: rlespinasse/github-slug-action@v3.x
+      - name: Clone OpenSilver repo
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.ref }}
+      - name: Clone Silverlight dlls
+        uses: actions/checkout@v2
+        with:
+          repository: ashotkhachatryan/SilverlightDlls
+          token: ${{ secrets.ACCESS_TOKEN }}
+          path: './src/Tests/TestApplication/dll'
+      - name: Replace UserName
+        working-directory: src\Tests\TestApplication
+        run: |
+          sed -i 's\USERNAME\${{ secrets.OPENSILVERDEMOSUSERNAME }}\g' TestApplication.Silverlight.Web\Properties\PublishProfiles\publish.pubxml
+      - name: Build and deploy
+        working-directory: src\Tests\TestApplication
+        run: |
+          msbuild TestApplication.Silverlight.sln /p:ReferencePath="..\dll" /p:DeployOnBuild=true /p:PublishProfile="publish.pubxml" /p:Password=${{ secrets.OPENSILVERDEMOSUSERPWD }}
