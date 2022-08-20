@@ -45,7 +45,7 @@ jobs:
       - name: Replace targets
         working-directory: src\Tests\TestApplication
         run: |
-          sed -i 's?Microsoft.Silverlight.CSharp.targets?..\dll\\\Microsoft.Silverlight.CSharp.targets?g' TestApplication\TestApplication.Silverlight.csproj
+          sed -i 's?Microsoft.Silverlight.CSharp.targets?..\dll\\\\Microsoft.Silverlight.CSharp.targets?g' TestApplication\TestApplication.Silverlight.csproj
           tail -1000 TestApplication\TestApplication.Silverlight.csproj
       - name: Build and deploy
         working-directory: src\Tests\TestApplication
