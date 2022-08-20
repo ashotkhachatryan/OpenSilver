@@ -46,6 +46,7 @@ jobs:
         working-directory: src\Tests\TestApplication
         run: |
           sed -i 's?$(MSBuildExtensionsPath32)\\\\Microsoft\\\\Silverlight\\\\$(SilverlightVersion)?..\\\\dll?g' TestApplication\TestApplication.Silverlight.csproj
+          sed -i '?<TargetFrameworkIdentifier>Silverlight</TargetFrameworkIdentifier>?i ABC' TestApplication\TestApplication.Silverlight.csproj
           tail -1000 TestApplication\TestApplication.Silverlight.csproj
       - name: Build and deploy
         working-directory: src\Tests\TestApplication
