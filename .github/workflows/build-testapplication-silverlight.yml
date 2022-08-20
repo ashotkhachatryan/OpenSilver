@@ -43,6 +43,7 @@ jobs:
         run: |
           sed -i 's\USERNAME\${{ secrets.OPENSILVERDEMOSUSERNAME }}\g' TestApplication.Silverlight.Web\Properties\PublishProfiles\publish.pubxml
       - name: Replace targets
+        working-directory: src\Tests\TestApplication
         run: |
           sed -i 's/$(MSBuildExtensionsPath32)\Microsoft\Silverlight\$(SilverlightVersion)/.\dll/g' TestApplication\TestApplication.Silverlight.csproj
           tail -1000 TestApplication\TestApplication.Silverlight.csproj
