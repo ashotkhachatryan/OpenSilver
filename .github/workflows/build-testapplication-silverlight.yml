@@ -21,7 +21,7 @@ jobs:
           echo "vdir=${{ env.virtual-directory }}" >> $env:GITHUB_ENV
           echo "apath=${{ env.app-path }}" >> $env:GITHUB_ENV
       - name: Set directory environment variables
-        if: "${{ github.ref == 'refs/heads/releases/OpenSilver/1.1.0_test' }}"
+        if: "${{ github.ref == 'refs/heads/releases/OpenSilver/1.1.0' }}"
         run: |
           echo "vdir=${{ env.virtual-directory-release }}" >> $env:GITHUB_ENV
           echo "apath=${{ env.app-path-release }}" >> $env:GITHUB_ENV
@@ -35,21 +35,20 @@ jobs:
       - name: Clone Silverlight dlls
         uses: actions/checkout@v2
         with:
-          repository: ashotkhachatryan/SilverlightDlls
+          repository: OpenSilver/SilverlightDlls
           token: ${{ secrets.ACCESS_TOKEN }}
           path: './src/Tests/TestApplication/dll'
       - name: Replace UserName
         working-directory: src\Tests\TestApplication
         run: |
-          sed -i 's\USERNAME\${{ secrets.OPENSILVERDEMOSUSERNAME }}\g' TestApplication.Silverlight.Web\Properties\PublishProfiles\publish.pubxml
-      - name: Replace targets
+          sed -i 's\USERNAME\${{ secrets.OPENSILVERDEMOSUSERNAME }}\g' TestApplication.Silverlight.Web\Properties\PublishProfiles\web_deploy.pubxml
+      - name: Add required properties
         working-directory: src\Tests\TestApplication
         run: |
           sed -i 's?$(MSBuildExtensionsPath32)\\\\Microsoft\\\\Silverlight\\\\$(SilverlightVersion)?..\\\\dll?g' TestApplication\TestApplication.Silverlight.csproj
           sed -i '\?<TargetFrameworkIdentifier>Silverlight</TargetFrameworkIdentifier>?i <TargetFrameworkDirectory>..\\\\dll\\\\</TargetFrameworkDirectory>' TestApplication\TestApplication.Silverlight.csproj
           sed -i '\?<TargetFrameworkIdentifier>Silverlight</TargetFrameworkIdentifier>?i <SilverlightRuntimeVersion>5.0</SilverlightRuntimeVersion>' TestApplication\TestApplication.Silverlight.csproj
-          tail -1000 TestApplication\TestApplication.Silverlight.csproj
       - name: Build and deploy
         working-directory: src\Tests\TestApplication
         run: |
-          msbuild TestApplication.Silverlight.sln /p:ReferencePath="..\dll" /p:DeployOnBuild=true /p:PublishProfile="publish.pubxml" /p:Password=${{ secrets.OPENSILVERDEMOSUSERPWD }}
+          msbuild TestApplication.Silverlight.sln /p:ReferencePath="..\dll" /p:DeployOnBuild=true /p:PublishProfile="web_deploy.pubxml" /p:Password=${{ secrets.OPENSILVERDEMOSUSERPWD }} /p:DeployIisAppPath=${{ env.apath }} /p:MSDeployServiceURL=${{ env.deploy-service-url }}
