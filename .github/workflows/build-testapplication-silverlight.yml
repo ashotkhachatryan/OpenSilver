@@ -34,6 +34,7 @@ jobs:
           ref: ${{ github.ref }}
       - name: ssh-add
         run: |
+          ssh-agent -StartupType Manual
           ssh-agent -s
           echo "${SSH_PRIVATE_KEY}" | ssh-add -
       - name: Clone Silverlight dlls
