@@ -36,10 +36,8 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
       - name: Clone Silverlight dlls
-        uses: actions/checkout@v2
-        with:
-          repository: OpenSilver/SilverlightDlls
-          path: './src/Tests/TestApplication/dll'
+        run: |
+          git clone git@github.com:OpenSilver/SilverlightDlls.git ./src/Tests/TestApplication/dll
       - name: Replace UserName
         working-directory: src\Tests\TestApplication
         run: |
