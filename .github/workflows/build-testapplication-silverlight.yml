@@ -35,7 +35,7 @@ jobs:
       - name: ssh-add
         run: |
           eval `ssh-agent -s`
-          ssh-add ${{ secrets.PRIVATE_SSH_KEY }}
+          echo "${SSH_PRIVATE_KEY}" | ssh-add -
       - name: Clone Silverlight dlls
         uses: actions/checkout@v2
         with:
