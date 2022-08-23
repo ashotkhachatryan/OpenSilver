@@ -35,6 +35,7 @@ jobs:
       - name: ssh-add
         run: |
           ssh-agent -StartupType Manual
+          Start-Service ssh-agent
           ssh-agent -s
           echo "${SSH_PRIVATE_KEY}" | ssh-add -
       - name: Clone Silverlight dlls
