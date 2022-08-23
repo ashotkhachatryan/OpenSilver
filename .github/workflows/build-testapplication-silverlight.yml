@@ -32,10 +32,14 @@ jobs:
         uses: actions/checkout@v2
         with:
           ref: ${{ github.ref }}
+      - name: ssh-add
+        run: |
+          eval `ssh-agent -s`
+          ssh-add - <<< '${{ secrets.PRIVATE_SSH_KEY }}'
       - name: Clone Silverlight dlls
         uses: actions/checkout@v2
         with:
-          repository: ashotkhachatryan/SilverlightDlls
+          repository: OpenSilver/SilverlightDlls
           path: './src/Tests/TestApplication/dll'
       - name: Replace UserName
         working-directory: src\Tests\TestApplication
