@@ -34,7 +34,7 @@ jobs:
           ref: ${{ github.ref }}
       - name: ssh-add
         run: |
-          eval `ssh-agent -s`
+          ssh-agent -s
           echo "${SSH_PRIVATE_KEY}" | ssh-add -
       - name: Clone Silverlight dlls
         uses: actions/checkout@v2
