@@ -8,15 +8,8 @@ env:
   deploy-service-url: 'opensilverdemos.scm.azurewebsites.net:443'
   next-release-version: '1.1.0'
 
-on:
-  workflow_dispatch:
-  push:
-    branches:
-      - develop
-
 jobs:
   TestApplicationBuild:
-    #We should not run these steps on the forks by default.
     runs-on: windows-latest
     steps:
       - name: Set directory environment variables
@@ -25,7 +18,7 @@ jobs:
           echo "vdir=${{ env.virtual-directory }}" >> $env:GITHUB_ENV
           echo "apath=${{ env.app-path }}" >> $env:GITHUB_ENV
       - name: Set directory environment variables
-        if: "${{ github.ref == 'refs/heads/releases/OpenSilver/1.1.0' }}"
+        if: "${{ github.ref == 'refs/heads/release_1.1.0' }}"
         run: |
           echo "vdir=${{ env.virtual-directory-release }}" >> $env:GITHUB_ENV
           echo "apath=${{ env.app-path-release }}" >> $env:GITHUB_ENV
@@ -72,8 +65,8 @@ jobs:
       - name: Use OpenSilver version
         working-directory: src\Tests\TestApplication
         run: |
-          dotnet add TestApplication.OpenSilver.Browser\TestApplication.OpenSilver.Browser.csproj package OpenSilver --version ${{ steps.format-version.outputs.version }} -s ../../../build/output/OpenSilver/ -s https://api.nuget.org/v3/index.json
-          dotnet add TestApplication\TestApplication.OpenSilver.csproj package OpenSilver --version ${{ steps.format-version.outputs.version }} -s ../../../build/output/OpenSilver/ -s https://api.nuget.org/v3/index.json
+          dotnet add TestApplication.OpenSilver.Browser\TestApplication.OpenSilver.Browser.csproj package OpenSilver --version ${{ steps.format-version.outputs.version }} -s ../../../build/output/OpenSilver/
+          dotnet add TestApplication\TestApplication.OpenSilver.csproj package OpenSilver --version ${{ steps.format-version.outputs.version }} -s ../../../build/output/OpenSilver/
       - name: Build and Deploy
         working-directory: src\Tests\TestApplication
         run: |
