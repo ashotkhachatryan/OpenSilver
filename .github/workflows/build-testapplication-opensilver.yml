@@ -10,9 +10,6 @@ env:
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - develop
 
 jobs:
   TestApplicationBuild:
@@ -72,8 +69,8 @@ jobs:
       - name: Use OpenSilver version
         working-directory: src\Tests\TestApplication
         run: |
-          dotnet add TestApplication.OpenSilver.Browser\TestApplication.OpenSilver.Browser.csproj package OpenSilver --version ${{ steps.format-version.outputs.version }} -s ../../../build/output/OpenSilver/ -s https://api.nuget.org/v3/index.json
-          dotnet add TestApplication\TestApplication.OpenSilver.csproj package OpenSilver --version ${{ steps.format-version.outputs.version }} -s ../../../build/output/OpenSilver/ -s https://api.nuget.org/v3/index.json
+          dotnet add TestApplication.OpenSilver.Browser\TestApplication.OpenSilver.Browser.csproj package OpenSilver --version ${{ steps.format-version.outputs.version }} -s ../../../build/output/OpenSilver/
+          dotnet add TestApplication\TestApplication.OpenSilver.csproj package OpenSilver --version ${{ steps.format-version.outputs.version }} -s ../../../build/output/OpenSilver/
       - name: Build and Deploy
         working-directory: src\Tests\TestApplication
         run: |
